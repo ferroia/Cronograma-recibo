@@ -6,14 +6,13 @@ const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('db.json');
 const db = low(adapter);
 
-// Base de datos inicial para el Cronograma de Recibo
 db.defaults({
   programaciones: [
     {
       id: 1,
       obra: "Obra Central",
       proveedor: "GALCO",
-      fecha: "2026-10-14",
+      fecha: "2026-10-15",
       horaInicio: "06:00",
       horaFin: "07:00",
       observaciones: "Recibo de tubería",
@@ -27,13 +26,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// API: Obtener todas las programaciones (para el Cronograma)
 app.get('/api/v1/programaciones', (req, res) => {
-  const lista = db.get('programaciones').value() || [];
-  res.json(lista);
+  res.json(db.get('programaciones').value() || []);
 });
 
-// API: Agendar un nuevo proveedor (+ Programar)
 app.post('/api/v1/programaciones', (req, res) => {
   const nueva = {
     id: Date.now(),
@@ -50,11 +46,8 @@ app.post('/api/v1/programaciones', (req, res) => {
   res.status(201).json(nueva);
 });
 
-// API: Datos para el Dashboard de mediciones
 app.get('/api/v1/dashboard', (req, res) => {
   const lista = db.get('programaciones').value() || [];
-  
-  // Conteo de proveedores e indicadores
   const totalRegistros = lista.length;
   const proveedoresUnicos = [...new Set(lista.map(p => p.proveedor))].length;
 
@@ -63,6 +56,10 @@ app.get('/api/v1/dashboard', (req, res) => {
     proveedoresUnicos,
     programaciones: lista
   });
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
 });
 
 const PORT = process.env.PORT || 3000;
