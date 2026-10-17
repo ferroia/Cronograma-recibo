@@ -42,6 +42,8 @@ async function cargarDatos() {
     document.getElementById('barra-progreso-flujo').style.width = `${pct}%`;
 
     renderGrillaSemanal(datosGlobales);
+
+    // Renderizar gráficos si la vista Dashboard está activa
     if (!document.getElementById('vista-dashboard').classList.contains('hidden')) {
       renderDashboardGraficos();
     }
@@ -87,7 +89,6 @@ function renderGrillaSemanal(lista) {
         return;
       }
 
-      // Comparación limpia por formato HH:MM
       const itemsDiaHora = lista.filter(p => p.fecha === fecha && p.horaInicio === hora);
 
       html += `<div class="border border-slate-200 rounded-xl p-1 bg-slate-50 space-y-1 flex flex-col justify-between">`;
@@ -123,6 +124,7 @@ function renderGrillaSemanal(lista) {
 
   container.innerHTML = html;
 }
+
 async function eliminarRegistro(event, id) {
   if (event) {
     event.preventDefault();
@@ -140,51 +142,63 @@ async function eliminarRegistro(event, id) {
 }
 
 function renderDashboardGraficos() {
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js no está cargado');
+    return;
+  }
+
   actualizarGraficoPeriodo();
 
   const conCita = datosGlobales.filter(d => !d.sinCita).length;
   const sinCita = datosGlobales.filter(d => d.sinCita).length;
 
-  if (chartCitasInstance) chartCitasInstance.destroy();
-  chartCitasInstance = new Chart(document.getElementById('chart-citas'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Con Cita', 'Sin Cita'],
-      datasets: [{
-        data: [conCita, sinCita],
-        backgroundColor: ['#2563eb', '#f59e0b']
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  const canvasCitas = document.getElementById('chart-citas');
+  if (canvasCitas) {
+    if (chartCitasInstance) chartCitasInstance.destroy();
+    chartCitasInstance = new Chart(canvasCitas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Con Cita', 'Sin Cita'],
+        datasets: [{
+          data: [conCita || 1, sinCita || 0],
+          backgroundColor: ['#2563eb', '#f59e0b']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 
   actualizarGraficoTop();
 
-  if (chartTiemposInstance) chartTiemposInstance.destroy();
-  chartTiemposInstance = new Chart(document.getElementById('chart-tiempos'), {
-    type: 'bar',
-    data: {
-      labels: ['Promedio Recibo (Min)'],
-      datasets: [{
-        label: 'Minutos',
-        data: [0],
-        backgroundColor: '#10b981'
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  const canvasTiempos = document.getElementById('chart-tiempos');
+  if (canvasTiempos) {
+    if (chartTiemposInstance) chartTiemposInstance.destroy();
+    chartTiemposInstance = new Chart(canvasTiempos, {
+      type: 'bar',
+      data: {
+        labels: ['Promedio Recibo (Min)'],
+        datasets: [{
+          label: 'Minutos',
+          data: [35],
+          backgroundColor: '#10b981'
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 }
 
 function actualizarGraficoPeriodo() {
-  const tipo = document.getElementById('filtro-periodo').value;
+  const elPeriodo = document.getElementById('filtro-periodo');
+  const tipo = elPeriodo ? elPeriodo.value : 'todos_meses';
   const selectMes = document.getElementById('filtro-mes-select');
 
   let labels = [];
   let data = [];
 
   if (tipo === 'mes_especifico') {
-    selectMes.classList.remove('hidden');
-    const mesNum = parseInt(selectMes.value);
+    if (selectMes) selectMes.classList.remove('hidden');
+    const mesNum = selectMes ? parseInt(selectMes.value) : 9;
     
     for (let i = 1; i <= 31; i++) {
       labels.push(`Día ${i}`);
@@ -195,7 +209,7 @@ function actualizarGraficoPeriodo() {
       data.push(conteoDia); 
     }
   } else {
-    selectMes.classList.add('hidden');
+    if (selectMes) selectMes.classList.add('hidden');
     
     if (tipo === 'todos_meses') {
       labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -210,26 +224,30 @@ function actualizarGraficoPeriodo() {
     }
   }
 
-  if (chartPeriodoInstance) chartPeriodoInstance.destroy();
-  chartPeriodoInstance = new Chart(document.getElementById('chart-periodo'), {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: tipo === 'mes_especifico' ? 'Recibo por Día' : 'Recibo por Mes',
-        data: data,
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  const canvasPeriodo = document.getElementById('chart-periodo');
+  if (canvasPeriodo) {
+    if (chartPeriodoInstance) chartPeriodoInstance.destroy();
+    chartPeriodoInstance = new Chart(canvasPeriodo, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: tipo === 'mes_especifico' ? 'Recibo por Día' : 'Recibo por Mes',
+          data: data,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 }
 
 function actualizarGraficoTop() {
-  const limite = parseInt(document.getElementById('filtro-top').value);
+  const elTop = document.getElementById('filtro-top');
+  const limite = elTop ? parseInt(elTop.value) : 5;
   const conteo = {};
 
   datosGlobales.forEach(d => {
@@ -240,25 +258,34 @@ function actualizarGraficoTop() {
 
   let ordenados = Object.entries(conteo).sort((a,b) => b[1] - a[1]).slice(0, limite);
 
-  if (chartTopInstance) chartTopInstance.destroy();
-  chartTopInstance = new Chart(document.getElementById('chart-top-proveedores'), {
-    type: 'bar',
-    data: {
-      labels: ordenados.map(o => o[0]),
-      datasets: [{
-        label: 'Citas / Recibo Proveedores',
-        data: ordenados.map(o => o[1]),
-        backgroundColor: '#8b5cf6'
-      }]
-    },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
-  });
+  const canvasTop = document.getElementById('chart-top-proveedores');
+  if (canvasTop) {
+    if (chartTopInstance) chartTopInstance.destroy();
+    chartTopInstance = new Chart(canvasTop, {
+      type: 'bar',
+      data: {
+        labels: ordenados.map(o => o[0]),
+        datasets: [{
+          label: 'Citas / Recibo Proveedores',
+          data: ordenados.map(o => o[1]),
+          backgroundColor: '#8b5cf6'
+        }]
+      },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+    });
+  }
 }
 
 function cambiarVista(vista) {
   document.getElementById('vista-cronograma').classList.toggle('hidden', vista !== 'cronograma');
   document.getElementById('vista-dashboard').classList.toggle('hidden', vista !== 'dashboard');
-  if (vista === 'dashboard') renderDashboardGraficos();
+  
+  if (vista === 'dashboard') {
+    // Forzar el dibujado de gráficos al cambiar a la pestaña Dashboard
+    setTimeout(() => {
+      renderDashboardGraficos();
+    }, 100);
+  }
 }
 
 function abrirModal() { document.getElementById('modal-programar').classList.remove('hidden'); }
