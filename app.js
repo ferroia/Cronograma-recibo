@@ -1,3 +1,162 @@
+let fechaReferencia = new Date();
+let chartPeriodoInstance = null;
+let chartCitasInstance = null;
+let chartTopInstance = null;
+let chartTiemposInstance = null;
+let datosGlobales = [];
+
+function obtenerFechasSemana(fecha) {
+  const d = new Date(fecha);
+  const day = d.getDay();
+  const diffToMonday = d.getDate() - (day === 0 ? 6 : day - 1);
+  const monday = new Date(d.setDate(diffToMonday));
+
+  const fechas = [];
+  for (let i = 0; i < 7; i++) {
+    const temp = new Date(monday);
+    temp.setDate(monday.getDate() + i);
+    const año = temp.getFullYear();
+    const mes = String(temp.getMonth() + 1).padStart(2, '0');
+    const dia = String(temp.getDate()).padStart(2, '0');
+    fechas.push(`${año}-${mes}-${dia}`);
+  }
+  return fechas;
+}
+
+const HORAS = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+
+async function cargarDatos() {
+  try {
+    const res = await fetch('/api/v1/dashboard');
+    const data = await res.json();
+
+    datosGlobales = data.programaciones || [];
+
+    document.getElementById('kpi-total').textContent = data.totalAgendamientos;
+    document.getElementById('kpi-pendientes').textContent = data.pendientes;
+    document.getElementById('kpi-completados').textContent = data.completados;
+    document.getElementById('kpi-promedio').textContent = `${data.promedioMinutos || 0} min`;
+
+    const pct = data.totalAgendamientos > 0 ? Math.round((data.completados / data.totalAgendamientos) * 100) : 0;
+    document.getElementById('txt-progreso-flujo').textContent = `Atendidos: ${pct}%`;
+    document.getElementById('barra-progreso-flujo').style.width = `${pct}%`;
+
+    renderGrillaSemanal(datosGlobales);
+
+    if (!document.getElementById('vista-dashboard').classList.contains('hidden')) {
+      renderDashboardGraficos();
+    }
+  } catch (err) {
+    console.error('Error cargando datos:', err);
+  }
+}
+
+function cambiarSemana(offset) {
+  if (offset === 0) fechaReferencia = new Date();
+  else fechaReferencia.setDate(fechaReferencia.getDate() + (offset * 7));
+  cargarDatos();
+}
+
+function renderGrillaSemanal(lista) {
+  const container = document.getElementById('grilla-semanal');
+  const fechasSemana = obtenerFechasSemana(fechaReferencia);
+  const nombresDias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+  const cabecera = document.getElementById('cabecera-dias');
+  let htmlCabecera = `<div class="font-bold text-slate-300">Hora</div>`;
+  
+  fechasSemana.forEach((f, idx) => {
+    const partes = f.split('-');
+    const diaMes = `${partes[2]}/${partes[1]}`;
+    if (idx === 6) {
+      htmlCabecera += `<div class="bg-rose-900 text-rose-200 rounded-lg py-1 font-bold">${nombresDias[idx]} ${diaMes}</div>`;
+    } else {
+      htmlCabecera += `<div class="font-bold">${nombresDias[idx]} ${diaMes}</div>`;
+    }
+  });
+  cabecera.innerHTML = htmlCabecera;
+
+  let html = '';
+
+  HORAS.forEach(hora => {
+    html += `<div class="grid grid-cols-8 gap-2 p-1 items-stretch min-h-[75px]">`;
+    html += `<div class="flex items-center justify-center font-bold text-xs text-slate-700 bg-slate-200 border border-slate-300 rounded-xl p-1">${hora}</div>`;
+
+    fechasSemana.forEach((fecha, idx) => {
+      if (idx === 6) {
+        html += `<div class="bg-rose-50 border border-rose-200 rounded-xl p-1 flex items-center justify-center text-center"><span class="text-[10px] font-semibold text-rose-400 italic">Descanso</span></div>`;
+        return;
+      }
+
+      const itemsDiaHora = lista.filter(p => p.fecha === fecha && p.horaInicio === hora);
+
+      html += `<div class="border border-slate-200 rounded-xl p-1 bg-slate-50 space-y-1 flex flex-col justify-between">`;
+      
+      if (itemsDiaHora.length > 0) {
+        itemsDiaHora.forEach(item => {
+          const esCompletado = item.estado === 'Completado';
+          const claseColorCard = esCompletado ? 'card-cita-emerald' : 'card-cita-amber';
+          
+          const btnEstado = esCompletado
+            ? `<button type="button" onclick="alternarEstado(event, '${item.id}', 'Programado')" title="Marcar como Pendiente" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">✅</button>`
+            : `<button type="button" onclick="alternarEstado(event, '${item.id}', 'Completado')" title="Marcar como Recibido" class="bg-slate-300 hover:bg-emerald-500 text-slate-700 hover:text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">⬜</button>`;
+
+          const tagCita = item.sinCita 
+            ? `<span class="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Sin Cita</span>`
+            : `<span class="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Con Cita</span>`;
+
+          const tagEstado = esCompletado
+            ? `<span class="bg-emerald-700 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Recibido</span>`
+            : tagCita;
+
+          html += `
+            <div class="card-cita ${claseColorCard}">
+              <span class="nombre-proveedor">${item.proveedor}</span>
+              <div class="fila-acciones">
+                <div>${tagEstado}</div>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  ${btnEstado}
+                  <button type="button" onclick="eliminarRegistro(event, '${item.id}')" title="Eliminar cita" class="bg-rose-500 hover:bg-rose-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      if (itemsDiaHora.length < 3) {
+        const cuposLibres = 3 - itemsDiaHora.length;
+        html += `<button type="button" onclick="abrirModalConFechaHora('${fecha}', '${hora}')" class="w-full text-[9px] text-slate-500 font-medium border border-dashed border-slate-300 hover:border-blue-500 hover:text-blue-600 rounded-lg p-1 text-center bg-white transition">+ Libre (${cuposLibres})</button>`;
+      }
+
+      html += `</div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+async function alternarEstado(event, id, nuevoEstado) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  try {
+    const res = await fetch(`/api/v1/programaciones/${id}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+    if (res.ok) {
+      await cargarDatos();
+    }
+  } catch (err) {
+    console.error('Error cambiando estado:', err);
+  }
+}
+
 async function eliminarRegistro(event, id) {
   if (event) {
     event.preventDefault();
