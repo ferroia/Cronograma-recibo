@@ -11,9 +11,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Datos iniciales de respaldo
+// Datos iniciales de respaldo con todo el historial de Octubre 2026
 const citasIniciales = [
-  // Semana Pasada / Recibida (Octubre 2026)
+  // Semana Recibida / Completada
   { id: '101', proveedor: 'PROCABLES', fecha: '2026-10-13', horaInicio: '10:00', estado: 'Completado', sinCita: false },
   { id: '102', proveedor: 'JAGUARCOL', fecha: '2026-10-13', horaInicio: '11:00', estado: 'Completado', sinCita: false },
   { id: '103', proveedor: 'GALCO', fecha: '2026-10-13', horaInicio: '13:00', estado: 'Completado', sinCita: false },
@@ -50,17 +50,15 @@ const citasIniciales = [
 ];
 
 function cargarCitas() {
-  if (fs.existsSync(DATA_FILE)) {
-    try {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
       const contenido = fs.readFileSync(DATA_FILE, 'utf-8');
       return JSON.parse(contenido);
-    } catch (e) {
-      return citasIniciales;
     }
-  } else {
-    guardarCitas(citasIniciales);
-    return citasIniciales;
+  } catch (e) {
+    console.error('Error leyendo datos.json, usando cita inicial:', e);
   }
+  return citasIniciales;
 }
 
 function guardarCitas(data) {
@@ -117,4 +115,4 @@ app.get('/api/v1/dashboard', (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log('Servidor activo en http://localhost:' + PORT));
+app.listen(PORT, () => console.log('Servidor activo en puerto ' + PORT));
