@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FERROCABLES® - Recibo de Proveedores</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js servido localmente desde el servidor -->
+  <script src="/chart.min.js"></script>
   <style>
     /* RESET & ESTILOS GLOBALES */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f8fafc; color: #0f172a; padding: 12px; min-height: 100vh; }
+    body { background-color: #f8fafc; color: #0f172a; padding: 16px; min-height: 100vh; }
     .max-w-7xl { max-width: 1280px; margin: 0 auto; }
     .space-y-4 > * + * { margin-top: 1rem; }
     .space-y-2 > * + * { margin-top: 0.5rem; }
@@ -38,7 +39,7 @@
     /* CONTENEDOR CON DESPLAZAMIENTO HORIZONTAL */
     .grid-container { background: #ffffff; border-radius: 16px; padding: 12px; border: 1px solid #e2e8f0; overflow-x: auto; min-width: 100%; }
 
-    /* SOLUCIÓN DE RAÍZ: REGLA DE 8 COLUMNAS INDESTRUCTIBLES CON MINMAX(0, 1FR) */
+    /* REGLA DE 8 COLUMNAS INDESTRUCTIBLES CON MINMAX(0, 1FR) */
     #cabecera-dias, .grid-cols-8 { 
       display: grid !important; 
       grid-template-columns: repeat(8, minmax(115px, 1fr)) !important; 
@@ -70,7 +71,7 @@
     .border-slate-300 { border-color: #cbd5e1 !important; }
     .text-slate-700 { color: #334155 !important; }
 
-    /* CELDA DE CADA DÍA (CANTIDAD Y TARJETAS) */
+    /* CELDA DE CADA DÍA */
     .border-slate-200 { border-color: #e2e8f0 !important; }
     .bg-slate-50 { background-color: #f8fafc !important; }
     .space-y-1 > * + * { margin-top: 4px !important; }
@@ -215,17 +216,41 @@
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
         <div class="card space-y-2">
-          <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Comportamiento por Periodo</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Comportamiento por Periodo</h3>
+            <div style="display:flex; gap:4px;">
+              <select id="filtro-periodo" onchange="actualizarGraficoPeriodo()" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+                <option value="todos_meses">Todos los Meses</option>
+                <option value="mes_especifico">Mes Específico</option>
+                <option value="comparativo_anos">Años</option>
+              </select>
+              <select id="filtro-mes-select" onchange="actualizarGraficoPeriodo()" class="hidden" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+                <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+              </select>
+            </div>
+          </div>
           <div style="height:180px;"><canvas id="chart-periodo"></canvas></div>
         </div>
+
         <div class="card space-y-2">
           <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Citas vs Sin Cita</h3>
           <div style="height:180px;"><canvas id="chart-citas"></canvas></div>
         </div>
+
         <div class="card space-y-2">
-          <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Top Proveedores Frecuentes</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Top Proveedores Frecuentes</h3>
+            <select id="filtro-top" onchange="actualizarGraficoTop()" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+              <option value="5">Top 5</option>
+              <option value="10">Top 10</option>
+            </select>
+          </div>
           <div style="height:180px;"><canvas id="chart-top-proveedores"></canvas></div>
         </div>
+
         <div class="card space-y-2">
           <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Tiempos Promedio de Descarga</h3>
           <div style="height:180px;"><canvas id="chart-tiempos"></canvas></div>
@@ -283,6 +308,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=charts_local"></script>
 </body>
 </html>
