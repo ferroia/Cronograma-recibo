@@ -8,7 +8,6 @@ let datosGlobales = [];
 function obtenerFechasSemana(fecha) {
   const d = new Date(fecha);
   const day = d.getDay();
-  // Ajustar para que la semana empiece el Lunes (1) hasta el Domingo (0 -> 7)
   const diffToMonday = d.getDate() - (day === 0 ? 6 : day - 1);
   const monday = new Date(d.setDate(diffToMonday));
 
@@ -79,8 +78,6 @@ function renderGrillaSemanal(lista) {
   let html = '';
 
   HORAS.forEach(hora => {
-    const horaNum = parseInt(hora.split(':')[0]);
-
     html += `<div class="grid grid-cols-8 gap-2 p-1 items-stretch min-h-[75px]">`;
     html += `<div class="flex items-center justify-center font-bold text-xs text-slate-700 bg-slate-200 border border-slate-300 rounded-xl p-1">${hora}</div>`;
 
@@ -90,7 +87,8 @@ function renderGrillaSemanal(lista) {
         return;
       }
 
-      const itemsDiaHora = lista.filter(p => p.fecha === fecha && parseInt(p.horaInicio.split(':')[0]) === horaNum);
+      // Comparación limpia por formato HH:MM
+      const itemsDiaHora = lista.filter(p => p.fecha === fecha && p.horaInicio === hora);
 
       html += `<div class="border border-slate-200 rounded-xl p-1 bg-slate-50 space-y-1 flex flex-col justify-between">`;
       
