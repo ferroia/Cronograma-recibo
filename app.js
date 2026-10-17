@@ -109,15 +109,20 @@ function renderGrillaSemanal(lista) {
             : tagCita;
 
           html += `
-            <div class="border ${bgCard} rounded-lg p-2 shadow-sm relative">
-              <div class="flex justify-between items-start gap-1">
-                <span class="text-xs text-slate-900 font-extrabold leading-tight break-words uppercase flex-1">${item.proveedor}</span>
+            <div class="border ${bgCard} rounded-lg p-2 shadow-sm relative space-y-1">
+              <!-- FILA 1: NOMBRE DEL PROVEEDOR EN MAYÚSCULAS Y DESTACADO -->
+              <div class="text-xs text-slate-900 font-extrabold leading-tight uppercase w-full block tracking-wide" style="word-break: normal; overflow-wrap: anywhere;">
+                ${item.proveedor}
+              </div>
+
+              <!-- FILA 2: ETIQUETA Y BOTONES ACCIÓN ABAJO -->
+              <div class="flex items-center justify-between gap-1 pt-1 border-t border-black/5">
+                <div>${tagEstado}</div>
                 <div class="flex items-center gap-1">
                   ${btnEstado}
                   <button type="button" onclick="eliminarRegistro(event, '${item.id}')" title="Eliminar cita" class="bg-rose-500 hover:bg-rose-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">🗑️</button>
                 </div>
               </div>
-              <div class="mt-1 flex items-center justify-between">${tagEstado}</div>
             </div>
           `;
         });
@@ -155,6 +160,7 @@ async function alternarEstado(event, id, nuevoEstado) {
     console.error('Error cambiando estado:', err);
   }
 }
+
 async function eliminarRegistro(event, id) {
   if (event) {
     event.preventDefault();
