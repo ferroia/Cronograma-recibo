@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FERROCABLES® - Recibo de Proveedores</title>
+  <script src="/chart.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; padding: 16px; min-height: 100vh; }
+    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+
+    header, .card { background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+    .brand-box { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { background: #2563eb; color: #ffffff; padding: 10px 14px; border-radius: 12px; font-weight: 900; font-size: 1.25rem; }
+    .title-text h1 { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.025em; color: #0f172a; }
+    .title-text p { font-size: 0.75rem; font-weight: 600; color: #64748b; }
+
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { padding: 8px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #2563eb; color: #ffffff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .info-badge { font-size: 0.75rem; font-weight: 700; color: #475569; }
+    .info-badge span { color: #1d4ed8; font-weight: 900; }
+
+    .grid-container { background: #ffffff; border-radius: 16px; padding: 12px; border: 1px solid #e2e8f0; overflow-x: auto; min-width: 100%; }
+
+    #cabecera-dias, .grid-cols-8 { 
+      display: grid !important; 
+      grid-template-columns: repeat(8, minmax(115px, 1fr)) !important; 
+      gap: 6px !important; 
+      width: 100% !important;
+      min-width: 920px !important; 
+    }
+
+    #cabecera-dias { 
+      background: #0f172a !important; 
+      color: #ffffff !important; 
+      padding: 10px 4px !important; 
+      border-radius: 12px !important; 
+      text-align: center !important; 
+      font-size: 0.75rem !important; 
+      font-weight: 700 !important; 
+      margin-bottom: 8px !important; 
+    }
+
+    .grid { display: grid !important; }
+    .gap-2 { gap: 6px !important; }
+    .p-1 { padding: 2px !important; }
+    .items-stretch { align-items: stretch !important; }
+    .min-h-\[75px\] { min-height: 75px !important; }
+
+    .bg-slate-200 { background-color: #e2e8f0 !important; }
+    .border-slate-300 { border-color: #cbd5e1 !important; }
+    .text-slate-700 { color: #334155 !important; }
+
+    .border-slate-200 { border-color: #e2e8f0 !important; }
+    .bg-slate-50 { background-color: #f8fafc !important; }
+    .space-y-1 > * + * { margin-top: 4px !important; }
+    .flex-col { flex-direction: column !important; }
+
+    /* ESTILOS DE LA TARJETA CON NOMBRE DESTACADO ARRIBA Y ACCIONES ABAJO */
+    .card-cita {
+      display: block !important;
+      width: 100% !important;
+      border-radius: 8px !important;
+      padding: 6px !important;
+      margin-bottom: 4px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+    
+    .card-cita-amber { background-color: #fef3c7 !important; border: 1px solid #fcd34d !important; }
+    .card-cita-emerald { background-color: #d1fae5 !important; border: 1px solid #6ee7b7 !important; }
+
+    .nombre-proveedor {
+      display: block !important;
+      width: 100% !important;
+      font-size: 0.75rem !important;
+      font-weight: 900 !important;
+      color: #0f172a !important;
+      text-transform: uppercase !important;
+      line-height: 1.2 !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+      hyphens: none !important;
+      margin-bottom: 6px !important;
+    }
+
+    .fila-acciones {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+      padding-top: 4px !important;
+      border-top: 1px solid rgba(0,0,0,0.08) !important;
+    }
+
+    .bg-rose-500 { background-color: #f43f5e !important; }
+    .text-white { color: #ffffff !important; }
+    .font-black { font-weight: 900 !important; }
+    .px-1\.5 { padding-left: 4px !important; padding-right: 4px !important; }
+    .py-0\.5 { padding-top: 1px !important; padding-bottom: 1px !important; }
+    .rounded { border-radius: 4px !important; }
+    .shrink-0 { flex-shrink: 0 !important; }
+    .cursor-pointer { cursor: pointer !important; }
+
+    .bg-rose-600 { background-color: #e11d48 !important; }
+    .bg-blue-600 { background-color: #2563eb !important; }
+    .bg-emerald-600 { background-color: #059669 !important; }
+    .bg-emerald-700 { background-color: #047857 !important; }
+
+    .w-full { width: 100% !important; }
+    .text-\[9px\] { font-size: 9px !important; }
+    .text-slate-500 { color: #64748b !important; }
+    .font-medium { font-weight: 500 !important; }
+    .border-dashed { border-style: dashed !important; }
+    .text-center { text-align: center !important; }
+    .bg-white { background-color: #ffffff !important; }
+
+    .bg-rose-50 { background-color: #fff1f2 !important; }
+    .border-rose-200 { border-color: #fecdd3 !important; }
+    .text-rose-400 { color: #fb7185 !important; }
+    .italic { font-style: italic !important; }
+    .font-semibold { font-weight: 600 !important; }
+
+    /* DASHBOARD KPIS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .kpi-card { background: #ffffff; padding: 16px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; }
+    .kpi-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; }
+    .kpi-value { font-size: 1.5rem; font-weight: 900; margin-top: 4px; }
+
+    /* BARRA DE FLUDO CON CAMIÓN 🚚 */
+    .truck-track {
+      position: relative;
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 999px;
+      height: 16px;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    .truck-progress {
+      position: relative;
+      height: 100%;
+      background-color: #2563eb;
+      border-radius: 999px;
+      transition: width 0.5s ease-in-out;
+      min-width: 24px;
+    }
+
+    .truck-avatar {
+      position: absolute;
+      right: -12px;
+      top: -10px;
+      font-size: 22px;
+      line-height: 1;
+      z-index: 10;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+    }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+    .modal-body { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .form-control { width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px; font-size: 0.75rem; outline: none; }
+  </style>
+</head>
+<body>
+
+  <div class="max-w-7xl space-y-4">
+    <!-- Encabezado Principal -->
+    <header>
+      <div class="brand-box">
+        <div class="logo-icon">⚡</div>
+        <div class="title-text">
+          <h1>FERROCABLES ®</h1>
+          <p>Gestión Logística & Control de Recibo de Proveedores</p>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button onclick="abrirModal()" class="btn btn-primary">+ Programar Cita</button>
+        <button onclick="cambiarVista('cronograma')" class="btn btn-secondary">📅 Vista Semanal</button>
+        <button onclick="cambiarVista('dashboard')" class="btn btn-secondary">📊 Dashboard</button>
+      </div>
+    </header>
+
+    <!-- Vista Cronograma Semanal -->
+    <main id="vista-cronograma" class="space-y-4">
+      <div class="card toolbar">
+        <div class="info-badge">
+          Franja de Recibo: <span>07:00 AM – 04:00 PM</span> | Máx. 3 Proveedores / Hora
+        </div>
+        <div class="btn-group">
+          <button onclick="cambiarSemana(-1)" class="btn btn-secondary">← Sem. Anterior</button>
+          <button onclick="cambiarSemana(0)" class="btn btn-primary">Hoy</button>
+          <button onclick="cambiarSemana(1)" class="btn btn-secondary">Sem. Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Tabla / Grilla Semanal -->
+      <div class="grid-container">
+        <div id="cabecera-dias"></div>
+        <div id="grilla-semanal"></div>
+      </div>
+    </main>
+
+    <!-- Vista Dashboard -->
+    <main id="vista-dashboard" class="space-y-4 hidden">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <p class="kpi-title">Total Recibos</p>
+          <p id="kpi-total" class="kpi-value" style="color:#0f172a">0</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-title">Pendientes</p>
+          <p id="kpi-pendientes" class="kpi-value" style="color:#f59e0b">0</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-title">Completados</p>
+          <p id="kpi-completados" class="kpi-value" style="color:#10b981">0</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-title">Promedio Minutos</p>
+          <p id="kpi-promedio" class="kpi-value" style="color:#2563eb">0 min</p>
+        </div>
+      </div>
+
+      <!-- Barra de Flujo con Camión 🚚 -->
+      <div class="card space-y-2">
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:#475569">
+          <span>Flujo de Operación de Recibo</span>
+          <span id="txt-progreso-flujo">Atendidos: 0%</span>
+        </div>
+        <div class="truck-track">
+          <div id="barra-progreso-flujo" class="truck-progress" style="width: 0%;">
+            <span class="truck-avatar">🚚</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+        <div class="card space-y-2">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Comportamiento por Periodo</h3>
+            <div style="display:flex; gap:4px;">
+              <select id="filtro-periodo" onchange="actualizarGraficoPeriodo()" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+                <option value="todos_meses">Todos los Meses</option>
+                <option value="mes_especifico">Mes Específico</option>
+                <option value="comparativo_anos">Años</option>
+              </select>
+              <select id="filtro-mes-select" onchange="actualizarGraficoPeriodo()" class="hidden" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+                <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+              </select>
+            </div>
+          </div>
+          <div style="height:180px;"><canvas id="chart-periodo"></canvas></div>
+        </div>
+
+        <div class="card space-y-2">
+          <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Citas vs Sin Cita</h3>
+          <div style="height:180px;"><canvas id="chart-citas"></canvas></div>
+        </div>
+
+        <div class="card space-y-2">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Top Proveedores Frecuentes</h3>
+            <select id="filtro-top" onchange="actualizarGraficoTop()" style="font-size:0.7rem; border:1px solid #cbd5e1; border-radius:6px; padding:2px;">
+              <option value="5">Top 5</option>
+              <option value="10">Top 10</option>
+            </select>
+          </div>
+          <div style="height:180px;"><canvas id="chart-top-proveedores"></canvas></div>
+        </div>
+
+        <div class="card space-y-2">
+          <h3 style="font-size:0.75rem; font-weight:800; color:#334155">Tiempos Promedio de Descarga</h3>
+          <div style="height:180px;"><canvas id="chart-tiempos"></canvas></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Programar -->
+  <div id="modal-programar" class="modal-overlay hidden">
+    <div class="modal-body space-y-4">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+        <h3 style="font-weight:900; color:#0f172a; font-size:1.125rem;">Agendar Proveedor</h3>
+        <button onclick="cerrarModal()" style="background:none; border:none; font-size:1.25rem; font-weight:700; color:#94a3b8; cursor:pointer;">✕</button>
+      </div>
+
+      <form id="form-programar" class="space-y-4">
+        <div class="form-group">
+          <label>Nombre Proveedor</label>
+          <input type="text" id="inp-proveedor" required placeholder="Ej: GALCO" class="form-control" style="text-transform:uppercase; font-weight:700;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="inp-fecha" required class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Hora Inicio</label>
+            <select id="inp-inicio" required class="form-control" style="font-weight:700;">
+              <option value="07:00">07:00 AM</option>
+              <option value="08:00">08:00 AM</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">01:00 PM</option>
+              <option value="14:00">02:00 PM</option>
+              <option value="15:00">03:00 PM</option>
+              <option value="16:00">04:00 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="inp-sincita">
+          <label for="inp-sincita" style="font-size:0.75rem; font-weight:700; color:#334155; margin:0;">Llegada Sin Cita (Excepción)</label>
+        </div>
+
+        <div style="display:flex; gap:8px; pt-2;">
+          <button type="button" onclick="cerrarModal()" class="btn btn-secondary" style="width:50%;">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="width:50%;">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js?v=final_prod"></script>
+</body>
+</html>

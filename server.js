@@ -8,6 +8,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 let programaciones = [
+  // Citas Recibidas Octubre 2026
   { id: '101', proveedor: 'PROCABLES', fecha: '2026-10-13', horaInicio: '10:00', estado: 'Completado', sinCita: false },
   { id: '102', proveedor: 'JAGUARCOL', fecha: '2026-10-13', horaInicio: '11:00', estado: 'Completado', sinCita: false },
   { id: '103', proveedor: 'GALCO', fecha: '2026-10-13', horaInicio: '13:00', estado: 'Completado', sinCita: false },
@@ -36,6 +37,8 @@ let programaciones = [
   { id: '126', proveedor: 'MEGALUCES', fecha: '2026-10-16', horaInicio: '13:00', estado: 'Completado', sinCita: false },
   { id: '127', proveedor: 'FRANCISCO MURILLO', fecha: '2026-10-16', horaInicio: '14:00', estado: 'Completado', sinCita: false },
   { id: '128', proveedor: 'TECNOSA', fecha: '2026-10-16', horaInicio: '15:00', estado: 'Completado', sinCita: false },
+
+  // Citas Agendadas Semana Siguiente
   { id: '201', proveedor: 'PROCABLES', fecha: '2026-10-19', horaInicio: '07:00', estado: 'Programado', sinCita: false },
   { id: '202', proveedor: 'DICO', fecha: '2026-10-20', horaInicio: '07:00', estado: 'Programado', sinCita: false },
   { id: '203', proveedor: 'JAGUARCOL', fecha: '2026-10-20', horaInicio: '07:00', estado: 'Programado', sinCita: false }
@@ -70,6 +73,7 @@ app.get('/api/v1/dashboard', (req, res) => {
   const totalAgendamientos = programaciones.length;
   const pendientes = programaciones.filter(p => p.estado === 'Programado').length;
   const completados = programaciones.filter(p => p.estado === 'Completado').length;
+
   res.json({
     totalAgendamientos,
     pendientes,
