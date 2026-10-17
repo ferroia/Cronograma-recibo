@@ -6,16 +6,20 @@ let chartTiemposInstance = null;
 let datosGlobales = [];
 
 function obtenerFechasSemana(fecha) {
-  const curr = new Date(fecha);
-  const day = curr.getDay();
-  const diffToMonday = curr.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(curr.setDate(diffToMonday));
+  const d = new Date(fecha);
+  const day = d.getDay();
+  // Ajustar para que la semana empiece el Lunes (1) hasta el Domingo (0 -> 7)
+  const diffToMonday = d.getDate() - (day === 0 ? 6 : day - 1);
+  const monday = new Date(d.setDate(diffToMonday));
 
   const fechas = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    fechas.push(d.toISOString().split('T')[0]);
+    const temp = new Date(monday);
+    temp.setDate(monday.getDate() + i);
+    const año = temp.getFullYear();
+    const mes = String(temp.getMonth() + 1).padStart(2, '0');
+    const dia = String(temp.getDate()).padStart(2, '0');
+    fechas.push(`${año}-${mes}-${dia}`);
   }
   return fechas;
 }
@@ -292,10 +296,8 @@ document.getElementById('form-programar').addEventListener('submit', async (e) =
   await cargarDatos();
 });
 
-// Cargar datos inicialmente
 cargarDatos();
 
-// Bucle de sincronización automática en vivo cada 3 segundos
 setInterval(() => {
   cargarDatos();
 }, 3000);
