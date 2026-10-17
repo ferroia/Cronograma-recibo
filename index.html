@@ -6,15 +6,15 @@
   <title>FERROCABLES® - Recibo de Proveedores</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Estilos Base y Restauración de Paleta Original */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #f8fafc; color: #0f172a; padding: 12px; }
+    /* RESET & ESTILOS GLOBALES */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; padding: 16px; min-height: 100vh; }
     .max-w-7xl { max-width: 1280px; margin: 0 auto; }
     .space-y-4 > * + * { margin-top: 1rem; }
     .space-y-2 > * + * { margin-top: 0.5rem; }
     .hidden { display: none !important; }
 
-    /* Encabezado Principal */
+    /* ENCABEZADO Y TARJETAS */
     header, .card { background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
     .brand-box { display: flex; align-items: center; gap: 12px; }
@@ -22,7 +22,7 @@
     .title-text h1 { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.025em; color: #0f172a; }
     .title-text p { font-size: 0.75rem; font-weight: 600; color: #64748b; }
 
-    /* Botones de Navegación */
+    /* BOTONES */
     .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn { padding: 8px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background: #2563eb; color: #ffffff; }
@@ -30,39 +30,57 @@
     .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
     .btn-secondary:hover { background: #e2e8f0; }
 
-    /* Barra Superior del Cronograma */
+    /* TOOLBAR SEMANAL */
     .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .info-badge { font-size: 0.75rem; font-weight: 700; color: #475569; }
     .info-badge span { color: #1d4ed8; font-weight: 900; }
 
-    /* Grilla Semanal */
+    /* GRILLA SEMANAL INDESTRUCTIBLE EN CSS */
     .grid-container { background: #ffffff; border-radius: 16px; padding: 12px; border: 1px solid #e2e8f0; overflow-x: auto; }
-    #cabecera-dias { display: grid; grid-template-columns: repeat(8, minmax(110px, 1fr)); gap: 8px; background: #0f172a; color: #ffffff; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; }
-    .grid-row { display: grid; grid-template-columns: repeat(8, minmax(110px, 1fr)); gap: 8px; padding: 4px 0; min-height: 75px; align-items: stretch; }
-    .time-col { display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #334155; background: #e2e8f0; border-radius: 12px; border: 1px solid #cbd5e1; padding: 4px; }
-    .day-col { border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+    #cabecera-dias { display: grid !important; grid-template-columns: repeat(8, minmax(110px, 1fr)) !important; gap: 8px !important; background: #0f172a !important; color: #ffffff !important; padding: 10px !important; border-radius: 12px !important; text-align: center !important; font-size: 0.75rem !important; font-weight: 700 !important; margin-bottom: 8px !important; }
+    
+    /* REGLAS INYECTADAS PARA GRILLA Y TARJETAS DINÁMICAS DE APP.JS */
+    .grid { display: grid !important; }
+    .grid-cols-8 { grid-template-columns: repeat(8, minmax(110px, 1fr)) !important; }
+    .gap-2 { gap: 8px !important; }
+    .p-1 { padding: 4px !important; }
+    .items-stretch { align-items: stretch !important; }
+    .min-h-\[75px\] { min-height: 75px !important; }
 
-    /* TARJETAS AMARILLAS ORIGINALES CON BOTÓN 🗑️ Y TAGS PEQUEÑOS */
-    .border-amber-300 { border: 1px solid #fcd34d !important; }
+    .flex { display: flex !important; }
+    .items-center { align-items: center !important; }
+    .justify-center { justify-content: center !important; }
+    .justify-between { justify-between: space-between !important; display: flex !important; justify-content: space-between !important; }
+    .font-bold { font-weight: 700 !important; }
+    .text-xs { font-size: 0.75rem !important; }
+    .text-slate-700 { color: #334155 !important; }
+    .bg-slate-200 { background-color: #e2e8f0 !important; }
+    .border-slate-300 { border-color: #cbd5e1 !important; }
+    .border { border-style: solid; border-width: 1px; }
+    .rounded-xl { border-radius: 12px !important; }
+
+    .border-slate-200 { border-color: #e2e8f0 !important; }
+    .bg-slate-50 { background-color: #f8fafc !important; }
+    .space-y-1 > * + * { margin-top: 4px !important; }
+    .flex-col { flex-direction: column !important; }
+
+    /* TARJETAS AMARILLAS ORIGINALES CON BORDE Y BOTÓN DE CANECA */
+    .border-amber-300 { border-color: #fcd34d !important; }
     .bg-amber-100 { background-color: #fef3c7 !important; }
     .rounded-lg { border-radius: 8px !important; }
     .p-2 { padding: 8px !important; }
     .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
     .relative { position: relative !important; }
-    .flex { display: flex !important; }
-    .justify-between { justify-content: space-between !important; }
     .items-start { align-items: flex-start !important; }
-    .items-center { align-items: center !important; }
     .gap-1 { gap: 4px !important; }
-    .text-xs { font-size: 0.75rem !important; }
     .text-slate-900 { color: #0f172a !important; }
     .font-extrabold { font-weight: 800 !important; }
     .leading-tight { line-height: 1.25 !important; }
-    .break-words { overflow-wrap: break-word !important; }
+    .break-words { word-break: break-word !important; }
     .uppercase { text-transform: uppercase !important; }
     .flex-1 { flex: 1 1 0% !important; }
+
     .bg-rose-500 { background-color: #f43f5e !important; }
-    .hover\:bg-rose-700:hover { background-color: #be123c !important; }
     .text-white { color: #ffffff !important; }
     .font-black { font-weight: 900 !important; }
     .px-1\.5 { padding-left: 6px !important; padding-right: 6px !important; }
@@ -71,30 +89,34 @@
     .shrink-0 { flex-shrink: 0 !important; }
     .cursor-pointer { cursor: pointer !important; }
     .mt-1 { margin-top: 4px !important; }
+
     .bg-rose-600 { background-color: #e11d48 !important; }
     .bg-blue-600 { background-color: #2563eb !important; }
 
-    /* Botón + Libre */
+    /* BOTON LIBRE */
     .w-full { width: 100% !important; }
     .text-\[9px\] { font-size: 9px !important; }
     .text-slate-500 { color: #64748b !important; }
     .font-medium { font-weight: 500 !important; }
     .border-dashed { border-style: dashed !important; }
-    .border-slate-300 { border-color: #cbd5e1 !important; }
-    .hover\:border-blue-500:hover { border-color: #3b82f6 !important; }
-    .hover\:text-blue-600:hover { color: #2563eb !important; }
-    .bg-white { background-color: #ffffff !important; }
-    .p-1 { padding: 4px !important; }
     .text-center { text-align: center !important; }
-    .transition { transition-property: color, background-color, border-color !important; transition-duration: 150ms !important; }
+    .bg-white { background-color: #ffffff !important; }
 
-    /* Dashboard KPIs */
+    /* DESCANSO */
+    .bg-rose-50 { background-color: #fff1f2 !important; }
+    .border-rose-200 { border-color: #fecdd3 !important; }
+    .text-rose-400 { color: #fb7185 !important; }
+    .italic { font-style: italic !important; }
+    .font-semibold { font-weight: 600 !important; }
+    .text-\[10px\] { font-size: 10px !important; }
+
+    /* DASHBOARD KPIS */
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
     .kpi-card { background: #ffffff; padding: 16px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; }
     .kpi-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; }
     .kpi-value { font-size: 1.5rem; font-weight: 900; margin-top: 4px; }
 
-    /* Modal */
+    /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
     .modal-body { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; }
     .form-group { margin-bottom: 12px; }
@@ -243,6 +265,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=final"></script>
 </body>
 </html>
