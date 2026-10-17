@@ -39,7 +39,9 @@ async function cargarDatos() {
     document.getElementById('barra-progreso-flujo').style.width = `${pct}%`;
 
     renderGrillaSemanal(datosGlobales);
-    renderDashboardGraficos();
+    if (!document.getElementById('vista-dashboard').classList.contains('hidden')) {
+      renderDashboardGraficos();
+    }
   } catch (err) {
     console.error('Error cargando datos:', err);
   }
@@ -138,7 +140,6 @@ async function eliminarRegistro(event, id) {
 function renderDashboardGraficos() {
   actualizarGraficoPeriodo();
 
-  // Gráfico Con Cita vs Sin Cita
   const conCita = datosGlobales.filter(d => !d.sinCita).length;
   const sinCita = datosGlobales.filter(d => d.sinCita).length;
 
@@ -157,7 +158,6 @@ function renderDashboardGraficos() {
 
   actualizarGraficoTop();
 
-  // Gráfico Tiempo Promedio
   if (chartTiemposInstance) chartTiemposInstance.destroy();
   chartTiemposInstance = new Chart(document.getElementById('chart-tiempos'), {
     type: 'bar',
@@ -292,4 +292,10 @@ document.getElementById('form-programar').addEventListener('submit', async (e) =
   await cargarDatos();
 });
 
+// Cargar datos inicialmente
 cargarDatos();
+
+// Bucle de sincronización automática en vivo cada 3 segundos
+setInterval(() => {
+  cargarDatos();
+}, 3000);
