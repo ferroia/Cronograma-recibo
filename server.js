@@ -1,68 +1,43 @@
 const express = require('express');
 const cors = require('cors');
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
-
-const adapter = new FileSync('db.json');
-const db = low(adapter);
-
-db.defaults({
-  programaciones: [
-    {
-      id: 1,
-      obra: "Obra Central",
-      proveedor: "GALCO",
-      fecha: "2026-10-15",
-      horaInicio: "06:00",
-      horaFin: "07:00",
-      observaciones: "Recibo de tubería",
-      estado: "Programado"
-    }
-  ]
-}).write();
-
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use(express.static(__dirname));
+
+// Lista inicial de citas
+let programaciones = [];
 
 app.get('/api/v1/programaciones', (req, res) => {
-  res.json(db.get('programaciones').value() || []);
+  res.json(programaciones);
 });
 
 app.post('/api/v1/programaciones', (req, res) => {
-  const nueva = {
-    id: Date.now(),
-    obra: req.body.obra || 'General',
-    proveedor: req.body.proveedor || 'Sin nombre',
-    fecha: req.body.fecha,
-    horaInicio: req.body.horaInicio,
-    horaFin: req.body.horaFin,
-    observaciones: req.body.observaciones || '',
-    estado: 'Programado'
-  };
+  const nuevo = { id: String(Date.now()), estado: 'Programado', ...req.body };
+  programaciones.push(nuevo);
+  res.status(201).json(nuevo);
+});
 
-  db.get('programaciones').push(nueva).write();
-  res.status(201).json(nueva);
+app.delete('/api/v1/programaciones/:id', (req, res) => {
+  const idBorrar = String(req.params.id);
+  programaciones = programaciones.filter(p => String(p.id) !== idBorrar);
+  res.json({ ok: true, idBorrado: idBorrar });
 });
 
 app.get('/api/v1/dashboard', (req, res) => {
-  const lista = db.get('programaciones').value() || [];
-  const totalRegistros = lista.length;
-  const proveedoresUnicos = [...new Set(lista.map(p => p.proveedor))].length;
+  const totalAgendamientos = programaciones.length;
+  const pendientes = programaciones.filter(p => p.estado === 'Programado').length;
+  const completados = programaciones.filter(p => p.estado === 'Completado').length;
 
   res.json({
-    totalRegistros,
-    proveedoresUnicos,
-    programaciones: lista
+    totalAgendamientos,
+    pendientes,
+    completados,
+    promedioMinutos: 0,
+    programaciones
   });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor Cronograma corriendo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log('Servidor activo en http://localhost:' + PORT));

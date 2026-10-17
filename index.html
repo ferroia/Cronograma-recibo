@@ -3,146 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cronograma de Recibo</title>
+  <title>Ferrocables® - Cronograma de Recibo</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @keyframes moverCamion {
+      0% { transform: translateX(0%); }
+      50% { transform: translateX(85%); }
+      100% { transform: translateX(0%); }
+    }
+    .anim-camion { animation: moverCamion 8s ease-in-out infinite; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 font-sans">
-  <div class="max-w-6xl mx-auto space-y-4">
-    <!-- Encabezado con Botones -->
-    <div class="flex flex-wrap items-center justify-between bg-white p-4 rounded-xl shadow-sm gap-2">
-      <h1 class="text-xl font-bold flex items-center gap-2">
-        📅 Cronograma de Recibo
-      </h1>
-      <div class="flex gap-2">
-        <button onclick="mostrarModal()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700">+ Programar</button>
-        <button onclick="verVista('cronograma')" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">🗓️ Cronograma</button>
-        <button onclick="verVista('dashboard')" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200">📊 Dashboard</button>
-      </div>
-    </div>
-
-    <!-- Vista Cronograma (Tabla de Horarios) -->
-    <div id="vista-cronograma" class="bg-white p-4 rounded-xl shadow-sm overflow-x-auto">
-      <div id="grid-cronograma" class="min-w-[700px]">
-        <p class="text-gray-500 text-center py-8">Cargando programaciones...</p>
-      </div>
-    </div>
-
-    <!-- Vista Dashboard (Métricas) -->
-    <div id="vista-dashboard" class="hidden bg-white p-6 rounded-xl shadow-sm space-y-4">
-      <h2 class="text-lg font-bold text-gray-800">Medición de Proveedores</h2>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <p class="text-xs text-blue-600 font-bold uppercase">Total Agendamientos</p>
-          <p id="total-agendamientos" class="text-2xl font-black text-blue-900">0</p>
-        </div>
-        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-          <p class="text-xs text-emerald-600 font-bold uppercase">Proveedores Únicos</p>
-          <p id="total-proveedores" class="text-2xl font-black text-emerald-900">0</p>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-2 md:p-4 font-sans">
+  <div class="max-w-[1650px] mx-auto space-y-3">
+    
+    <!-- Header Claro Ejecutivo -->
+    <header class="flex flex-wrap items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md">⚡</div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-wide text-slate-900 flex items-center gap-1.5">
+            FERROCABLES <span class="text-blue-600 text-xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200">®</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 font-medium">Gestión Logística & Control de Recibo de Proveedores</p>
         </div>
       </div>
-    </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="abrirModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-sm transition">+ Programar Cita</button>
+        <button onclick="cambiarVista('cronograma')" class="bg-slate-200 text-slate-800 font-semibold px-3 py-2 rounded-xl text-xs border border-slate-300">🗓️ Vista Semanal</button>
+        <button onclick="cambiarVista('dashboard')" class="bg-slate-100 text-slate-600 font-semibold px-3 py-2 rounded-xl text-xs border border-slate-200 hover:bg-slate-200">📊 Dashboard</button>
+      </div>
+    </header>
+
+    <!-- Cronograma Semanal -->
+    <main id="vista-cronograma" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="font-bold text-slate-700">Franja de Recibo: <strong class="text-blue-700">07:00 AM – 04:00 PM</strong> | Máx. 3 Proveedores / Hora</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button onclick="cambiarSemana(-1)" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 font-bold rounded-lg border shadow-xs transition">← Sem. Anterior</button>
+          <button onclick="cambiarSemana(0)" class="px-3 py-1 bg-blue-600 text-white font-bold rounded-lg shadow-xs transition">Hoy</button>
+          <button onclick="cambiarSemana(1)" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 font-bold rounded-lg border shadow-xs transition">Sem. Siguiente →</button>
+        </div>
+      </div>
+
+      <div id="cabecera-dias" class="grid grid-cols-8 gap-2 min-w-[1250px] bg-slate-800 text-white p-2.5 rounded-xl font-bold text-xs text-center"></div>
+      <div id="grilla-semanal" class="min-w-[1250px] space-y-1 mt-1"></div>
+    </main>
+
+    <!-- Dashboard Analítico Avanzado con Datos 100% Reales -->
+    <section id="vista-dashboard" class="hidden bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+      
+      <!-- Monitoreo en Tiempo Real -->
+      <div class="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 overflow-hidden relative">
+        <div class="flex justify-between items-center mb-2 z-10 relative">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+            <span>🚚</span> Monitoreo en tiempo real de Recibo de Proveedores FERROCABLES®
+          </h3>
+          <span id="txt-progreso-flujo" class="text-xs font-black bg-blue-600 px-2 py-0.5 rounded-md">Atendidos: 0%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-8 rounded-xl relative overflow-hidden flex items-center px-2 border border-slate-700">
+          <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-600 to-emerald-500 opacity-30 transition-all duration-500" id="barra-progreso-flujo" style="width: 0%;"></div>
+          <div class="anim-camion text-xl z-10">🚚</div>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPI -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-blue-50 border border-blue-200 p-3.5 rounded-xl">
+          <p class="text-[10px] font-bold text-blue-600 uppercase">Total Citas Programadas</p>
+          <p id="kpi-total" class="text-2xl font-black text-blue-900 mt-0.5">0</p>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl">
+          <p class="text-[10px] font-bold text-amber-600 uppercase">Pendientes por Recibir</p>
+          <p id="kpi-pendientes" class="text-2xl font-black text-amber-900 mt-0.5">0</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl">
+          <p class="text-[10px] font-bold text-emerald-600 uppercase">Proveedores Recibidos</p>
+          <p id="kpi-completados" class="text-2xl font-black text-emerald-900 mt-0.5">0</p>
+        </div>
+        <div class="bg-purple-50 border border-purple-200 p-3.5 rounded-xl">
+          <p class="text-[10px] font-bold text-purple-600 uppercase">Tiempo Promedio Recibo</p>
+          <p id="kpi-promedio" class="text-2xl font-black text-purple-900 mt-0.5">0 min</p>
+        </div>
+      </div>
+
+      <!-- Gráficos Fila 1 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2 bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+          <div class="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+            <h4 class="font-bold text-xs text-slate-800">📈 Recibo de Proveedores por Periodo</h4>
+            <div class="flex items-center gap-2">
+              <select id="filtro-periodo" onchange="actualizarGraficoPeriodo()" class="text-xs border rounded-lg p-1 bg-white font-bold text-slate-700">
+                <option value="todos_meses" selected>Todos los Meses</option>
+                <option value="mes_especifico">Mes Específico (Día a Día)</option>
+                <option value="ano">Por Año</option>
+              </select>
+              <select id="filtro-mes-select" onchange="actualizarGraficoPeriodo()" class="hidden text-xs border rounded-lg p-1 bg-white font-bold text-blue-700">
+                <option value="0">Enero</option>
+                <option value="1">Febrero</option>
+                <option value="2">Marzo</option>
+                <option value="3">Abril</option>
+                <option value="4">Mayo</option>
+                <option value="5">Junio</option>
+                <option value="6">Julio</option>
+                <option value="7">Agosto</option>
+                <option value="8">Septiembre</option>
+                <option value="9" selected>Octubre</option>
+                <option value="10">Noviembre</option>
+                <option value="11">Diciembre</option>
+              </select>
+            </div>
+          </div>
+          <div class="h-60"><canvas id="chart-periodo"></canvas></div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+          <h4 class="font-bold text-xs text-slate-800 border-b pb-2">⚠️ Proporción Con Cita vs Sin Cita</h4>
+          <div class="h-60 flex items-center justify-center"><canvas id="chart-citas"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Gráficos Fila 2 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2 bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h4 class="font-bold text-xs text-slate-800">🏆 Top Proveedores Más Frecuentes</h4>
+            <select id="filtro-top" onchange="actualizarGraficoTop()" class="text-xs border rounded-lg p-1 bg-white font-bold text-slate-700">
+              <option value="5" selected>Top 5</option>
+              <option value="10">Top 10</option>
+              <option value="15">Top 15</option>
+              <option value="20">Top 20</option>
+            </select>
+          </div>
+          <div class="h-60"><canvas id="chart-top-proveedores"></canvas></div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+          <h4 class="font-bold text-xs text-slate-800 border-b pb-2">⏱️ Tiempo Promedio de Descarga (Minutos)</h4>
+          <div class="h-60"><canvas id="chart-tiempos"></canvas></div>
+        </div>
+      </div>
+
+    </section>
+
   </div>
 
-  <!-- Modal Nuevo Agendamiento -->
-  <div id="modal-programar" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
-      <h3 class="font-bold text-lg">Programar Recibo de Proveedor</h3>
-      <form id="form-programar" class="space-y-3">
+  <!-- Modal Programar Cita -->
+  <div id="modal-programar" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 z-50">
+    <div class="bg-white rounded-2xl p-5 w-full max-w-md space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-sm text-slate-900">📦 Programar Cita de Recibo</h3>
+        <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="form-programar" class="space-y-3 text-xs">
         <div>
-          <label class="block text-xs font-semibold text-gray-600">Obra / Destino</label>
-          <input type="text" id="inp-obra" required class="w-full border rounded-lg p-2 text-sm mt-1" placeholder="Ej: Obra Central">
+          <label class="block font-bold text-slate-800 text-xs mb-1">Nombre del Proveedor</label>
+          <input type="text" id="inp-proveedor" required oninput="this.value = this.value.toUpperCase()" class="w-full border-2 border-slate-300 focus:border-blue-600 rounded-xl p-2.5 font-extrabold text-sm text-slate-900 uppercase" placeholder="EJ: GALCO S.A.S.">
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Nombre del Proveedor</label>
-          <input type="text" id="inp-proveedor" required class="w-full border rounded-lg p-2 text-sm mt-1" placeholder="Ej: GALCO">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Fecha</label>
-          <input type="date" id="inp-fecha" required class="w-full border rounded-lg p-2 text-sm mt-1">
-        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-gray-600">Hora Inicio</label>
-            <input type="time" id="inp-inicio" required class="w-full border rounded-lg p-2 text-sm mt-1">
+            <label class="block font-bold text-slate-700 mb-1">Fecha</label>
+            <input type="date" id="inp-fecha" required class="w-full border rounded-xl p-2 font-medium">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-600">Hora Fin</label>
-            <input type="time" id="inp-fin" required class="w-full border rounded-lg p-2 text-sm mt-1">
+            <label class="block font-bold text-slate-700 mb-1">Hora Programada</label>
+            <input type="time" id="inp-inicio" min="07:00" max="16:00" required class="w-full border rounded-xl p-2 font-medium">
           </div>
         </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="cerrarModal()" class="px-4 py-2 text-sm text-gray-600">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white font-semibold rounded-lg">Guardar</button>
+
+        <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl flex items-center justify-between mt-1">
+          <label for="inp-sincita" class="font-bold text-amber-900 text-xs cursor-pointer">⚠️ ¿Llegó Sin Cita?</label>
+          <input type="checkbox" id="inp-sincita" class="w-4 h-4 text-amber-600 rounded border-amber-300 focus:ring-amber-500 cursor-pointer">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="cerrarModal()" class="px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm">Guardar Cita</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script>
-    async function cargarDatos() {
-      const res = await fetch('/api/v1/dashboard');
-      const data = await res.json();
-      
-      document.getElementById('total-agendamientos').textContent = data.totalRegistros;
-      document.getElementById('total-proveedores').textContent = data.proveedoresUnicos;
-      
-      renderCronograma(data.programaciones);
-    }
-
-    function renderCronograma(lista) {
-      const container = document.getElementById('grid-cronograma');
-      if (!lista.length) {
-        container.innerHTML = '<p class="text-center text-gray-400 py-8">No hay recepciones agendadas.</p>';
-        return;
-      }
-      
-      let html = '<div class="space-y-2">';
-      lista.forEach(item => {
-        html += `
-          <div class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-lg">
-            <div>
-              <span class="font-bold text-blue-900">${item.proveedor}</span>
-              <span class="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded ml-2">${item.obra}</span>
-              <p class="text-xs text-gray-500">${item.fecha} (${item.horaInicio} - ${item.horaFin})</p>
-            </div>
-            <span class="text-xs font-semibold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">${item.estado}</span>
-          </div>
-        `;
-      });
-      html += '</div>';
-      container.innerHTML = html;
-    }
-
-    function verVista(vista) {
-      document.getElementById('vista-cronograma').classList.toggle('hidden', vista !== 'cronograma');
-      document.getElementById('vista-dashboard').classList.toggle('hidden', vista !== 'dashboard');
-    }
-
-    function mostrarModal() { document.getElementById('modal-programar').classList.remove('hidden'); }
-    function cerrarModal() { document.getElementById('modal-programar').classList.add('hidden'); }
-
-    document.getElementById('form-programar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const body = {
-        obra: document.getElementById('inp-obra').value,
-        proveedor: document.getElementById('inp-proveedor').value,
-        fecha: document.getElementById('inp-fecha').value,
-        horaInicio: document.getElementById('inp-inicio').value,
-        horaFin: document.getElementById('inp-fin').value
-      };
-
-      await fetch('/api/v1/programaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      cerrarModal();
-      e.target.reset();
-      cargarDatos();
-    });
-
-    cargarDatos();
-  </script>
+  <script src="/app.js"></script>
 </body>
 </html>

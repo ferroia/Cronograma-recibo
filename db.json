@@ -1,0 +1,51 @@
+{
+  "programaciones": [
+    {
+      "id": 1,
+      "obra": "Obra Central",
+      "proveedor": "GALCO",
+      "material": "Tubería PVC",
+      "fecha": "2026-10-15",
+      "horaInicio": "07:00",
+      "horaFin": "08:00",
+      "duracionMinutos": 60,
+      "placa": "AAA-123",
+      "estado": "Completado"
+    },
+    {
+      "id": 2,
+      "obra": "Obra Central",
+      "proveedor": "TERCOL",
+      "material": "Concreto / Aditivos",
+      "fecha": "2026-10-15",
+      "horaInicio": "07:30",
+      "horaFin": "08:15",
+      "duracionMinutos": 45,
+      "placa": "BBB-456"
+    },
+    {
+      "id": 1792115118151,
+      "obra": "Obra Principal",
+      "proveedor": "Tcc",
+      "material": "General",
+      "fecha": "2026-10-16",
+      "horaInicio": "07:00",
+      "duracionMinutos": 30,
+      "placa": "N/A",
+      "observaciones": "",
+      "estado": "Completado"
+    },
+    {
+      "id": 1792116421991,
+      "obra": "Obra Principal",
+      "proveedor": "PRUEBAS",
+      "material": "General",
+      "fecha": "2026-10-16",
+      "horaInicio": "08:00",
+      "duracionMinutos": 30,
+      "placa": "N/A",
+      "observaciones": "",
+      "estado": "Cumplio"
+    }
+  ]
+}
