@@ -1,19 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'datos.json');
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Datos iniciales de respaldo con todo el historial de Octubre 2026
-const citasIniciales = [
-  // Semana Recibida / Completada
+// Listado de citas (Semana recibida + Citas agendadas)
+let programaciones = [
+  // Semana Octubre 2026 (Recibida / Completada)
   { id: '101', proveedor: 'PROCABLES', fecha: '2026-10-13', horaInicio: '10:00', estado: 'Completado', sinCita: false },
   { id: '102', proveedor: 'JAGUARCOL', fecha: '2026-10-13', horaInicio: '11:00', estado: 'Completado', sinCita: false },
   { id: '103', proveedor: 'GALCO', fecha: '2026-10-13', horaInicio: '13:00', estado: 'Completado', sinCita: false },
@@ -49,28 +45,6 @@ const citasIniciales = [
   { id: '203', proveedor: 'JAGUARCOL', fecha: '2026-10-20', horaInicio: '07:00', estado: 'Programado', sinCita: false }
 ];
 
-function cargarCitas() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const contenido = fs.readFileSync(DATA_FILE, 'utf-8');
-      return JSON.parse(contenido);
-    }
-  } catch (e) {
-    console.error('Error leyendo datos.json, usando cita inicial:', e);
-  }
-  return citasIniciales;
-}
-
-function guardarCitas(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Error guardando en disco:', e);
-  }
-}
-
-let programaciones = cargarCitas();
-
 app.get('/api/v1/programaciones', (req, res) => {
   res.json(programaciones);
 });
@@ -78,7 +52,6 @@ app.get('/api/v1/programaciones', (req, res) => {
 app.post('/api/v1/programaciones', (req, res) => {
   const nuevo = { id: String(Date.now()), estado: 'Programado', ...req.body };
   programaciones.push(nuevo);
-  guardarCitas(programaciones);
   res.status(201).json(nuevo);
 });
 
@@ -88,7 +61,6 @@ app.put('/api/v1/programaciones/:id/estado', (req, res) => {
   const item = programaciones.find(p => String(p.id) === id);
   if (item) {
     item.estado = estado || (item.estado === 'Completado' ? 'Programado' : 'Completado');
-    guardarCitas(programaciones);
     return res.json({ ok: true, item });
   }
   res.status(404).json({ error: 'No encontrado' });
@@ -97,7 +69,6 @@ app.put('/api/v1/programaciones/:id/estado', (req, res) => {
 app.delete('/api/v1/programaciones/:id', (req, res) => {
   const idBorrar = String(req.params.id);
   programaciones = programaciones.filter(p => String(p.id) !== idBorrar);
-  guardarCitas(programaciones);
   res.json({ ok: true, idBorrado: idBorrar });
 });
 
@@ -115,4 +86,4 @@ app.get('/api/v1/dashboard', (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log('Servidor activo en puerto ' + PORT));
+app.listen(PORT, () => console.log('Servidor en puerto ' + PORT));
