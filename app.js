@@ -43,7 +43,6 @@ async function cargarDatos() {
 
     renderGrillaSemanal(datosGlobales);
 
-    // Renderizar gráficos si la vista Dashboard está activa
     if (!document.getElementById('vista-dashboard').classList.contains('hidden')) {
       renderDashboardGraficos();
     }
@@ -95,17 +94,30 @@ function renderGrillaSemanal(lista) {
       
       if (itemsDiaHora.length > 0) {
         itemsDiaHora.forEach(item => {
+          const esCompletado = item.estado === 'Completado';
+          const bgCard = esCompletado ? 'bg-emerald-100 border-emerald-300' : 'bg-amber-100 border-amber-300';
+          const btnEstado = esCompletado
+            ? `<button type="button" onclick="alternarEstado(event, '${item.id}', 'Programado')" title="Marcar como Pendiente" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">✅</button>`
+            : `<button type="button" onclick="alternarEstado(event, '${item.id}', 'Completado')" title="Marcar como Recibido" class="bg-slate-300 hover:bg-emerald-500 text-slate-700 hover:text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">⬜</button>`;
+
           const tagCita = item.sinCita 
             ? `<span class="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Sin Cita</span>`
             : `<span class="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Con Cita</span>`;
 
+          const tagEstado = esCompletado
+            ? `<span class="bg-emerald-700 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">Recibido</span>`
+            : tagCita;
+
           html += `
-            <div class="border border-amber-300 bg-amber-100 rounded-lg p-2 shadow-sm relative">
+            <div class="border ${bgCard} rounded-lg p-2 shadow-sm relative">
               <div class="flex justify-between items-start gap-1">
                 <span class="text-xs text-slate-900 font-extrabold leading-tight break-words uppercase flex-1">${item.proveedor}</span>
-                <button type="button" onclick="eliminarRegistro(event, '${item.id}')" title="Eliminar cita" class="bg-rose-500 hover:bg-rose-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">🗑️</button>
+                <div class="flex items-center gap-1">
+                  ${btnEstado}
+                  <button type="button" onclick="eliminarRegistro(event, '${item.id}')" title="Eliminar cita" class="bg-rose-500 hover:bg-rose-700 text-white font-black text-xs px-1.5 py-0.5 rounded shadow-xs shrink-0 cursor-pointer">🗑️</button>
+                </div>
               </div>
-              <div class="mt-1 flex items-center justify-between">${tagCita}</div>
+              <div class="mt-1 flex items-center justify-between">${tagEstado}</div>
             </div>
           `;
         });
@@ -125,6 +137,24 @@ function renderGrillaSemanal(lista) {
   container.innerHTML = html;
 }
 
+async function alternarEstado(event, id, nuevoEstado) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  try {
+    const res = await fetch(`/api/v1/programaciones/${id}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+    if (res.ok) {
+      await cargarDatos();
+    }
+  } catch (err) {
+    console.error('Error cambiando estado:', err);
+  }
+}
 async function eliminarRegistro(event, id) {
   if (event) {
     event.preventDefault();
@@ -142,10 +172,7 @@ async function eliminarRegistro(event, id) {
 }
 
 function renderDashboardGraficos() {
-  if (typeof Chart === 'undefined') {
-    console.error('Chart.js no está cargado');
-    return;
-  }
+  if (typeof Chart === 'undefined') return;
 
   actualizarGraficoPeriodo();
 
@@ -281,7 +308,6 @@ function cambiarVista(vista) {
   document.getElementById('vista-dashboard').classList.toggle('hidden', vista !== 'dashboard');
   
   if (vista === 'dashboard') {
-    // Forzar el dibujado de gráficos al cambiar a la pestaña Dashboard
     setTimeout(() => {
       renderDashboardGraficos();
     }, 100);
