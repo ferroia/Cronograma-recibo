@@ -32,9 +32,9 @@ async function cargarDatos() {
 
     datosGlobales = data.programaciones || [];
 
-    document.getElementById('kpi-total').textContent = data.totalAgendamientos;
-    document.getElementById('kpi-pendientes').textContent = data.pendientes;
-    document.getElementById('kpi-completados').textContent = data.completados;
+    document.getElementById('kpi-total').textContent = data.totalAgendamientos || 0;
+    document.getElementById('kpi-pendientes').textContent = data.pendientes || 0;
+    document.getElementById('kpi-completados').textContent = data.completados || 0;
     document.getElementById('kpi-promedio').textContent = `${data.promedioMinutos || 0} min`;
 
     const pct = data.totalAgendamientos > 0 ? Math.round((data.completados / data.totalAgendamientos) * 100) : 0;
@@ -59,6 +59,8 @@ function cambiarSemana(offset) {
 
 function renderGrillaSemanal(lista) {
   const container = document.getElementById('grilla-semanal');
+  if (!container) return;
+
   const fechasSemana = obtenerFechasSemana(fechaReferencia);
   const nombresDias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -74,7 +76,7 @@ function renderGrillaSemanal(lista) {
       htmlCabecera += `<div class="font-bold">${nombresDias[idx]} ${diaMes}</div>`;
     }
   });
-  cabecera.innerHTML = htmlCabecera;
+  if (cabecera) cabecera.innerHTML = htmlCabecera;
 
   let html = '';
 
