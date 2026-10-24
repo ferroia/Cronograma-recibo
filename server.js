@@ -33,9 +33,9 @@ function requestGoogle(url, method, payload = null) {
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
         try {
-          resolve(body ? JSON.parse(body) : []);
+          resolve(body ? JSON.parse(body) : body);
         } catch (e) {
-          resolve([]);
+          resolve(body);
         }
       });
     });
@@ -49,21 +49,36 @@ function requestGoogle(url, method, payload = null) {
 app.get('/api/citas', async (req, res) => {
   try {
     const citas = await requestGoogle(GOOGLE_WEBHOOK, 'GET');
-    res.json(citas);
+    res.json(Array.isArray(citas) ? citas : []);
   } catch (error) {
-    console.error('Error al obtener citas:', error);
-    res.status(500).json({ error: 'Error de almacenamiento' });
+    console.error('Error GET Google Sheets:', error);
+    res.status(500).json({ error: 'Error al leer almacenamiento' });
   }
 });
 
 app.post('/api/citas', async (req, res) => {
   try {
-    const nuevaCita = req.body;
-    await requestGoogle(GOOGLE_WEBHOOK, 'POST', JSON.stringify(nuevaCita));
-    res.status(201).json({ status: 'ok', cita: nuevaCita });
+    const body = req.body || {};
+    
+    // Normalización de campos para garantizar que ningún dato llegue vacío
+    const citaNormalizada = {
+      tipo: body.tipo || 'cita',
+      fecha: body.fecha || body.date || body.dia || '',
+      inicio: body.inicio || body.hora || body.start || '',
+      fin: body.fin || body.end || (Number(body.inicio || body.hora) ? Number(body.inicio || body.hora) + 1 : '') || '',
+      proveedor: body.proveedor || body.empresa || body.nombre || body.client || '',
+      nota: body.nota || body.estado || body.observacion || '',
+      ts: body.ts || new Date().getTime()
+    };
+
+    console.log('Enviando cita normalizada a Google Sheets:', JSON.stringify(citaNormalizada));
+    const respuestaGoogle = await requestGoogle(GOOGLE_WEBHOOK, 'POST', JSON.stringify(citaNormalizada));
+    console.log('Respuesta de Google Sheets:', JSON.stringify(respuestaGoogle));
+
+    res.status(201).json({ status: 'ok', cita: citaNormalizada, google: respuestaGoogle });
   } catch (error) {
-    console.error('Error al guardar cita:', error);
-    res.status(500).json({ error: 'Error al registrar cita' });
+    console.error('Error POST Google Sheets:', error);
+    res.status(500).json({ error: 'Error al escribir cita' });
   }
 });
 
