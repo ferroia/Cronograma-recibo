@@ -51,8 +51,8 @@ app.get('/api/citas', async (req, res) => {
     const citas = await requestGoogle(GOOGLE_WEBHOOK, 'GET');
     res.json(citas);
   } catch (error) {
-    console.error('Error al obtener citas de Google Sheets:', error);
-    res.status(500).json({ error: 'Error al consultar almacenamiento' });
+    console.error('Error al obtener citas:', error);
+    res.status(500).json({ error: 'Error de almacenamiento' });
   }
 });
 
@@ -62,8 +62,8 @@ app.post('/api/citas', async (req, res) => {
     await requestGoogle(GOOGLE_WEBHOOK, 'POST', JSON.stringify(nuevaCita));
     res.status(201).json({ status: 'ok', cita: nuevaCita });
   } catch (error) {
-    console.error('Error al guardar cita en Google Sheets:', error);
-    res.status(500).json({ error: 'Error al registrar en Google Sheets' });
+    console.error('Error al guardar cita:', error);
+    res.status(500).json({ error: 'Error al registrar cita' });
   }
 });
 
@@ -78,7 +78,7 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Servidor de Ferrocables activo en puerto ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor activo en puerto ${PORT}`));
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
