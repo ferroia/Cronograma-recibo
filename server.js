@@ -1,126 +1,84 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'datos.json');
+
+const GOOGLE_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwBP4gZ7w9MG2ybTq26QNi1XaD2HZpvZMqM1O45bVJsBtEQD49qch9udJL1IY-CK6_1bQ/exec'; 
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.urlencoded({ extended: true }));
 
-// Historial inicial de Octubre 2026 (Semana Recibida) + Citas Agendadas
-const citasIniciales = [
-  // Martes 13/10
-  { id: '101', proveedor: 'PROCABLES', fecha: '2026-10-13', horaInicio: '10:00', estado: 'Completado', sinCita: false },
-  { id: '102', proveedor: 'JAGUARCOL', fecha: '2026-10-13', horaInicio: '11:00', estado: 'Completado', sinCita: false },
-  { id: '103', proveedor: 'GALCO', fecha: '2026-10-13', horaInicio: '13:00', estado: 'Completado', sinCita: false },
-  { id: '104', proveedor: 'TCC', fecha: '2026-10-13', horaInicio: '14:00', estado: 'Completado', sinCita: false },
-  { id: '105', proveedor: 'JAGUARCOL', fecha: '2026-10-13', horaInicio: '15:00', estado: 'Completado', sinCita: false },
+function requestGoogle(url, method, payload = null) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const options = {
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      method: method,
+      headers: payload ? {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      } : {}
+    };
 
-  // Miércoles 14/10
-  { id: '106', proveedor: 'GALCO', fecha: '2026-10-14', horaInicio: '07:00', estado: 'Completado', sinCita: false },
-  { id: '107', proveedor: 'TECNOSA', fecha: '2026-10-14', horaInicio: '08:00', estado: 'Completado', sinCita: false },
-  { id: '108', proveedor: 'CASA FERRETERA', fecha: '2026-10-14', horaInicio: '09:00', estado: 'Completado', sinCita: false },
-  { id: '109', proveedor: 'GALCO', fecha: '2026-10-14', horaInicio: '10:00', estado: 'Completado', sinCita: false },
-  { id: '110', proveedor: 'COMERCIALIZADORA DE ELECTRICOS COLOMBIA', fecha: '2026-10-14', horaInicio: '11:00', estado: 'Completado', sinCita: false },
-  { id: '111', proveedor: 'ELECTRICOS Y TUBOS LOS ALPES', fecha: '2026-10-14', horaInicio: '13:00', estado: 'Completado', sinCita: false },
-  { id: '112', proveedor: 'METALTUBOS', fecha: '2026-10-14', horaInicio: '14:00', estado: 'Completado', sinCita: false },
-  { id: '113', proveedor: 'LAUMAYER', fecha: '2026-10-14', horaInicio: '15:00', estado: 'Completado', sinCita: false },
+    const req = https.request(options, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        return requestGoogle(res.headers.location, method, payload).then(resolve).catch(reject);
+      }
 
-  // Jueves 15/10
-  { id: '114', proveedor: 'TERCOL', fecha: '2026-10-15', horaInicio: '07:00', estado: 'Completado', sinCita: false },
-  { id: '115', proveedor: 'EQUIELECT', fecha: '2026-10-15', horaInicio: '08:00', estado: 'Completado', sinCita: false },
-  { id: '116', proveedor: 'COORDINADORA', fecha: '2026-10-15', horaInicio: '09:00', estado: 'Completado', sinCita: false },
-  { id: '117', proveedor: 'SONEPAR', fecha: '2026-10-15', horaInicio: '10:00', estado: 'Completado', sinCita: false },
-  { id: '118', proveedor: 'GALCO', fecha: '2026-10-15', horaInicio: '12:00', estado: 'Completado', sinCita: false },
-  { id: '119', proveedor: 'ELECTRICOS JG', fecha: '2026-10-15', horaInicio: '13:00', estado: 'Completado', sinCita: false },
-  { id: '120', proveedor: 'INSUTUBOS', fecha: '2026-10-15', horaInicio: '14:00', estado: 'Completado', sinCita: false },
-  { id: '121', proveedor: 'JAGUARCOL', fecha: '2026-10-15', horaInicio: '15:00', estado: 'Completado', sinCita: false },
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve(body ? JSON.parse(body) : []);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    });
 
-  // Viernes 16/10
-  { id: '122', proveedor: 'DICO', fecha: '2026-10-16', horaInicio: '07:00', estado: 'Completado', sinCita: false },
-  { id: '123', proveedor: 'PROCABLES', fecha: '2026-10-16', horaInicio: '09:00', estado: 'Completado', sinCita: false },
-  { id: '124', proveedor: 'SOMELECT', fecha: '2026-10-16', horaInicio: '11:00', estado: 'Completado', sinCita: false },
-  { id: '125', proveedor: 'TCC', fecha: '2026-10-16', horaInicio: '12:00', estado: 'Completado', sinCita: false },
-  { id: '126', proveedor: 'MEGALUCES', fecha: '2026-10-16', horaInicio: '13:00', estado: 'Completado', sinCita: false },
-  { id: '127', proveedor: 'FRANCISCO MURILLO', fecha: '2026-10-16', horaInicio: '14:00', estado: 'Completado', sinCita: false },
-  { id: '128', proveedor: 'TECNOSA', fecha: '2026-10-16', horaInicio: '15:00', estado: 'Completado', sinCita: false },
-
-  // Semana Siguiente Agendada
-  { id: '201', proveedor: 'PROCABLES', fecha: '2026-10-19', horaInicio: '07:00', estado: 'Programado', sinCita: false },
-  { id: '202', proveedor: 'DICO', fecha: '2026-10-20', horaInicio: '07:00', estado: 'Programado', sinCita: false },
-  { id: '203', proveedor: 'JAGUARCOL', fecha: '2026-10-20', horaInicio: '07:00', estado: 'Programado', sinCita: false }
-];
-
-function cargarCitas() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const contenido = fs.readFileSync(DATA_FILE, 'utf-8');
-      const parseado = JSON.parse(contenido);
-      if (Array.isArray(parseado) && parseado.length > 0) return parseado;
-    }
-  } catch (e) {
-    console.error('Error leyendo datos.json:', e);
-  }
-  guardarCitas(citasIniciales);
-  return citasIniciales;
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
 }
 
-function guardarCitas(data) {
+app.get('/api/citas', async (req, res) => {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Error guardando datos.json:', e);
+    const citas = await requestGoogle(GOOGLE_WEBHOOK, 'GET');
+    res.json(citas);
+  } catch (error) {
+    console.error('Error al obtener citas de Google Sheets:', error);
+    res.status(500).json({ error: 'Error al consultar almacenamiento' });
   }
-}
-
-let programaciones = cargarCitas();
-
-app.get('/api/v1/programaciones', (req, res) => {
-  res.json(programaciones);
 });
 
-app.post('/api/v1/programaciones', (req, res) => {
-  const nuevo = { id: String(Date.now()), estado: 'Programado', ...req.body };
-  programaciones.push(nuevo);
-  guardarCitas(programaciones);
-  res.status(201).json(nuevo);
-});
-
-app.put('/api/v1/programaciones/:id/estado', (req, res) => {
-  const id = String(req.params.id);
-  const { estado } = req.body;
-  const item = programaciones.find(p => String(p.id) === id);
-  if (item) {
-    item.estado = estado || (item.estado === 'Completado' ? 'Programado' : 'Completado');
-    guardarCitas(programaciones);
-    return res.json({ ok: true, item });
+app.post('/api/citas', async (req, res) => {
+  try {
+    const nuevaCita = req.body;
+    await requestGoogle(GOOGLE_WEBHOOK, 'POST', JSON.stringify(nuevaCita));
+    res.status(201).json({ status: 'ok', cita: nuevaCita });
+  } catch (error) {
+    console.error('Error al guardar cita en Google Sheets:', error);
+    res.status(500).json({ error: 'Error al registrar en Google Sheets' });
   }
-  res.status(404).json({ error: 'No encontrado' });
 });
 
-app.delete('/api/v1/programaciones/:id', (req, res) => {
-  const idBorrar = String(req.params.id);
-  programaciones = programaciones.filter(p => String(p.id) !== idBorrar);
-  guardarCitas(programaciones);
-  res.json({ ok: true, idBorrado: idBorrar });
-});
+app.use(express.static(path.join(__dirname, 'público')));
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/v1/dashboard', (req, res) => {
-  const totalAgendamientos = programaciones.length;
-  const pendientes = programaciones.filter(p => p.estado === 'Programado').length;
-  const completados = programaciones.filter(p => p.estado === 'Completado').length;
-
-  res.json({
-    totalAgendamientos,
-    pendientes,
-    completados,
-    promedioMinutos: completados > 0 ? 35 : 0,
-    programaciones
+app.get('/', (req, res) => {
+  const publicPath = path.join(__dirname, 'público', 'index.html');
+  res.sendFile(publicPath, (err) => {
+    if (err) res.status(200).send('<h2>Servidor Conectado a Google Sheets</h2>');
   });
 });
 
-app.listen(PORT, () => console.log('Servidor activo en puerto ' + PORT));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor de Ferrocables activo en puerto ${PORT}`));
+
+process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
