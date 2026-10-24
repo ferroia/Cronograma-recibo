@@ -5,7 +5,7 @@ const https = require('https');
 
 const app = express();
 
-const GOOGLE_WEBHOOK = 'https://script.google.com/macros/s/AKfycbxpNpyIVYWJ6tYXQrsdYnkFn5smT3p8WSbu8hkymXptW7P-V04XKriv-UkRvxMFwhzlQA/exec'; 
+const GOOGLE_WEBHOOK = 'https://script.google.com/macros/s/AKfycbyCZuwT4Bib5_LECjVcnSYKvcZ9F883ZmaxecWF4yKSit7PrPfuJkN6WJPTwQTgpmDWcQ/exec'; 
 
 app.use(cors());
 app.use(express.json());
