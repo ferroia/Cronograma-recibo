@@ -102,8 +102,49 @@
   </div>
 
   <script>
-    let globalCitas = [];
-    let offsetSemana = 0; 
+    const citasPrecargadas = [
+      {"id": "h1", "fecha": "2026-10-19", "hora": "07:00", "proveedor": "PROCABLES", "estado": "RECIBIDO"},
+      {"id": "h2", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "DICO", "estado": "RECIBIDO"},
+      {"id": "h3", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "JAGUARCOL", "estado": "RECIBIDO"},
+      {"id": "h4", "fecha": "2026-10-21", "hora": "07:00", "proveedor": "DICO", "estado": "RECIBIDO"},
+      {"id": "1", "fecha": "2026-10-26", "hora": "07:00", "proveedor": "MERCURY", "estado": "RECIBIDO"},
+      {"id": "2", "fecha": "2026-10-26", "hora": "10:00", "proveedor": "ELECTRICOS PEREZ", "estado": "RECIBIDO"},
+      {"id": "3", "fecha": "2026-10-26", "hora": "12:00", "proveedor": "LAUMAYER", "estado": "RECIBIDO"},
+      {"id": "4", "fecha": "2026-10-26", "hora": "14:00", "proveedor": "PROCABLES", "estado": "RECIBIDO"},
+      {"id": "5", "fecha": "2026-10-26", "hora": "14:00", "proveedor": "TCC", "estado": "RECIBIDO"},
+      {"id": "6", "fecha": "2026-10-27", "hora": "07:00", "proveedor": "COMERCIAL ELECTRICOS", "estado": "RECIBIDO"},
+      {"id": "7", "fecha": "2026-10-27", "hora": "10:00", "proveedor": "INSUTUBOS", "estado": "RECIBIDO"},
+      {"id": "8", "fecha": "2026-10-27", "hora": "13:00", "proveedor": "GALCO", "estado": "RECIBIDO"},
+      {"id": "9", "fecha": "2026-10-27", "hora": "13:00", "proveedor": "JAGUARCOL", "estado": "RECIBIDO"},
+      {"id": "10", "fecha": "2026-10-27", "hora": "14:00", "proveedor": "MUNDIAL DE TORNILLOS", "estado": "RECIBIDO"},
+      {"id": "11", "fecha": "2026-10-28", "hora": "09:00", "proveedor": "PROCABLES", "estado": "RECIBIDO"},
+      {"id": "12", "fecha": "2026-10-28", "hora": "10:00", "proveedor": "JG DIST", "estado": "RECIBIDO"},
+      {"id": "13", "fecha": "2026-10-28", "hora": "11:00", "proveedor": "INSUTUBOS", "estado": "RECIBIDO"},
+      {"id": "14", "fecha": "2026-10-28", "hora": "13:00", "proveedor": "SOMELECT", "estado": "RECIBIDO"},
+      {"id": "15", "fecha": "2026-10-28", "hora": "13:00", "proveedor": "GALCO", "estado": "RECIBIDO"},
+      {"id": "16", "fecha": "2026-10-28", "hora": "14:00", "proveedor": "TCC", "estado": "RECIBIDO"},
+      {"id": "17", "fecha": "2026-10-28", "hora": "14:00", "proveedor": "COORDINADORA", "estado": "RECIBIDO"},
+      {"id": "18", "fecha": "2026-10-28", "hora": "16:00", "proveedor": "ENSAMBLES Y DISTRIBUCIONES", "estado": "RECIBIDO"},
+      {"id": "19", "fecha": "2026-10-29", "hora": "07:00", "proveedor": "EDEMCO", "estado": "RECIBIDO"},
+      {"id": "20", "fecha": "2026-10-29", "hora": "08:00", "proveedor": "EQUIELECT", "estado": "RECIBIDO"},
+      {"id": "21", "fecha": "2026-10-29", "hora": "10:00", "proveedor": "TECNOSA", "estado": "RECIBIDO"},
+      {"id": "22", "fecha": "2026-10-29", "hora": "10:00", "proveedor": "PROCABLES", "estado": "RECIBIDO"},
+      {"id": "23", "fecha": "2026-10-29", "hora": "11:00", "proveedor": "CILES", "estado": "RECIBIDO"},
+      {"id": "24", "fecha": "2026-10-29", "hora": "13:00", "proveedor": "ALDIA", "estado": "RECIBIDO"},
+      {"id": "25", "fecha": "2026-10-29", "hora": "13:00", "proveedor": "DICO", "estado": "RECIBIDO"},
+      {"id": "26", "fecha": "2026-10-29", "hora": "14:00", "proveedor": "TCC", "estado": "RECIBIDO"},
+      {"id": "27", "fecha": "2026-10-29", "hora": "14:00", "proveedor": "TERCOL", "estado": "RECIBIDO"},
+      {"id": "28", "fecha": "2026-10-29", "hora": "14:00", "proveedor": "ENSAMBLES Y DISEÑOS", "estado": "RECIBIDO"},
+      {"id": "29", "fecha": "2026-10-29", "hora": "15:00", "proveedor": "GALCO", "estado": "RECIBIDO"},
+      {"id": "30", "fecha": "2026-10-30", "hora": "08:00", "proveedor": "PROCABLES", "estado": "CON CITA"},
+      {"id": "31", "fecha": "2026-10-30", "hora": "10:00", "proveedor": "GALCO", "estado": "CON CITA"},
+      {"id": "32", "fecha": "2026-10-30", "hora": "11:00", "proveedor": "PROCABLES", "estado": "CON CITA"},
+      {"id": "33", "fecha": "2026-10-30", "hora": "13:00", "proveedor": "TECNOSA", "estado": "CON CITA"},
+      {"id": "34", "fecha": "2026-10-30", "hora": "14:00", "proveedor": "TCC", "estado": "CON CITA"}
+    ];
+
+    let globalCitas = [...citasPrecargadas];
+    let offsetSemana = 0;
 
     const fechasSemanaActual = ["2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01"];
     const fechasSemanaAnterior = ["2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"];
@@ -122,10 +163,11 @@
     async function cargarCitas() {
       try {
         const res = await fetch('/api/citas');
-        globalCitas = await res.json();
-      } catch (err) {
-        console.error("Error al obtener citas:", err);
-      }
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          globalCitas = data;
+        }
+      } catch (err) {}
       renderCalendar();
     }
 
@@ -185,18 +227,21 @@
     }
 
     async function cambiarEstado(id, estado) {
+      const item = globalCitas.find(c => c.id === id);
+      if (item) item.estado = estado;
+      renderCalendar();
       await fetch('/api/citas/estado', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, estado })
       });
-      await cargarCitas();
     }
 
     async function eliminarCita(id) {
       if (confirm('¿Eliminar cita?')) {
+        globalCitas = globalCitas.filter(c => c.id !== id);
+        renderCalendar();
         await fetch(`/api/citas/${id}`, { method: 'DELETE' });
-        await cargarCitas();
       }
     }
 
@@ -210,21 +255,28 @@
 
     document.getElementById('formCita').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const nueva = {
+        id: Date.now().toString(),
+        proveedor: document.getElementById('inputProveedor').value,
+        fecha: document.getElementById('inputFecha').value,
+        hora: document.getElementById('inputHora').value,
+        estado: document.getElementById('inputEstado').value
+      };
+      globalCitas.push(nueva);
+      renderCalendar();
+      cerrarModal();
+
       await fetch('/api/citas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          proveedor: document.getElementById('inputProveedor').value,
-          fecha: document.getElementById('inputFecha').value,
-          hora: document.getElementById('inputHora').value,
-          estado: document.getElementById('inputEstado').value
-        })
+        body: JSON.stringify(nueva)
       });
-      cerrarModal();
-      await cargarCitas();
     });
 
-    document.addEventListener('DOMContentLoaded', cargarCitas);
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+      cargarCitas();
+    });
   </script>
 </body>
 </html>
