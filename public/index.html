@@ -39,13 +39,13 @@
       <div class="min-w-[900px]">
         <div class="grid grid-cols-8 gap-2 mb-2 text-center text-xs font-bold bg-slate-900 text-white py-2 rounded">
           <div>Hora</div>
-          <div id="head-lun">Lun</div>
-          <div id="head-mar">Mar</div>
-          <div id="head-mie">Mié</div>
-          <div id="head-jue">Jue</div>
-          <div id="head-vie">Vie</div>
-          <div id="head-sab">Sáb</div>
-          <div id="head-dom" class="text-rose-300">Dom</div>
+          <div id="head-lun">Lun 26/10</div>
+          <div id="head-mar">Mar 27/10</div>
+          <div id="head-mie">Mié 28/10</div>
+          <div id="head-jue">Jue 29/10</div>
+          <div id="head-vie">Vie 30/10</div>
+          <div id="head-sab">Sáb 31/10</div>
+          <div id="head-dom" class="text-rose-300">Dom 01/11</div>
         </div>
         <div id="calendarGrid" class="space-y-1"></div>
       </div>
@@ -83,23 +83,24 @@
 
   <script>
     let globalCitas = [];
-    let fechaReferencia = new Date('2026-10-26T00:00:00');
+    let fechaLunesBase = new Date(2026, 9, 26); // 26 Octubre 2026
+
     const horasTrabajo = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
 
-    function getStartOfWeek(d) {
-      const date = new Date(d);
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(date.setDate(diff));
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
-    function cambiarSemana(dias) {
-      fechaReferencia.setDate(fechaReferencia.getDate() + (dias * 7));
+    function cambiarSemana(offset) {
+      fechaLunesBase.setDate(fechaLunesBase.getDate() + (offset * 7));
       renderCalendar();
     }
 
     function semanaActual() {
-      fechaReferencia = new Date('2026-10-26T00:00:00');
+      fechaLunesBase = new Date(2026, 9, 26);
       renderCalendar();
     }
 
@@ -107,17 +108,18 @@
       try {
         const res = await fetch('/api/citas');
         globalCitas = await res.json();
-      } catch (err) {}
+      } catch (err) {
+        console.error("Error al obtener citas:", err);
+      }
       renderCalendar();
     }
 
     function renderCalendar() {
-      const startOfWeek = getStartOfWeek(fechaReferencia);
       const diasSemana = [];
       for (let i = 0; i < 7; i++) {
-        const temp = new Date(startOfWeek);
+        const temp = new Date(fechaLunesBase);
         temp.setDate(temp.getDate() + i);
-        diasSemana.push(temp.toISOString().split('T')[0]);
+        diasSemana.push(formatDate(temp));
       }
 
       const idsHeaders = ['head-lun', 'head-mar', 'head-mie', 'head-jue', 'head-vie', 'head-sab', 'head-dom'];
