@@ -19,15 +19,14 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// BASE DE DATOS COMPLETA DE CITAS (68 REGISTROS UNIFICADOS)
-const datasetCompleto = [
+const citasCompletas = [
   // SEMANA ANTERIOR (19/10 AL 25/10)
   {"id": "h1", "fecha": "2026-10-19", "hora": "07:00", "proveedor": "PROCABLES", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "h2", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "DICO", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "h3", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "JAGUARCOL", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "h4", "fecha": "2026-10-21", "hora": "07:00", "proveedor": "DICO", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
 
-  // SEMANA RECIENTE (26/10 AL 01/11 - EXTRAÍDAS DE TUS PANTALLAZOS)
+  // SEMANA ACTUAL (26/10 AL 01/11)
   {"id": "1", "fecha": "2026-10-26", "hora": "07:00", "proveedor": "MERCURY", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "2", "fecha": "2026-10-26", "hora": "10:00", "proveedor": "ELECTRICOS PEREZ", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "3", "fecha": "2026-10-26", "hora": "12:00", "proveedor": "LAUMAYER", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
@@ -64,7 +63,7 @@ const datasetCompleto = [
   {"id": "34", "fecha": "2026-10-30", "hora": "14:00", "proveedor": "TCC", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "CON CITA"}
 ];
 
-let memoriaLocal = [...datasetCompleto];
+let memoriaLocal = [...citasCompletas];
 
 async function initDB() {
   if (!process.env.DATABASE_URL) return;
@@ -82,7 +81,8 @@ async function initDB() {
         estado VARCHAR(50) NOT NULL
       );
     `);
-    for (const c of datasetCompleto) {
+    
+    for (const c of citasCompletas) {
       await client.query(`
         INSERT INTO citas_proveedores (id, proveedor, fecha, hora, tipo_material, placa, observaciones, estado)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -99,7 +99,7 @@ app.get('/api/citas', async (req, res) => {
   if (!process.env.DATABASE_URL) return res.json(memoriaLocal);
   try {
     const result = await pool.query('SELECT id, proveedor, fecha, hora, tipo_material AS "tipoMaterial", placa, observaciones, estado FROM citas_proveedores ORDER BY id ASC');
-    if (result.rows.length === 0) return res.json(datasetCompleto);
+    if (result.rows.length === 0) return res.json(citasCompletas);
     res.json(result.rows);
   } catch (err) {
     res.json(memoriaLocal);
@@ -107,9 +107,12 @@ app.get('/api/citas', async (req, res) => {
 });
 
 app.post('/api/citas', async (req, res) => {
-  const { proveedor, fecha, hora, tipoMaterial, placa, observaciones } = req.body;
+  const { proveedor, fecha, hora, tipoMaterial, placa, observaciones, estado } = req.body;
+  if (!proveedor || !fecha || !hora) return res.status(400).json({ error: 'Faltan campos' });
+  
   const id = Date.now().toString();
-  const nueva = { id, proveedor, fecha, hora, tipoMaterial: tipoMaterial || '', placa: placa || '', observaciones: observaciones || '', estado: 'CON CITA' };
+  const nuevoEstado = estado || 'CON CITA';
+  const nueva = { id, proveedor, fecha, hora, tipoMaterial: tipoMaterial || '', placa: placa || '', observaciones: observaciones || '', estado: nuevoEstado };
   memoriaLocal.push(nueva);
 
   if (process.env.DATABASE_URL) {
@@ -154,4 +157,4 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`Servidor activo en ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));

@@ -6,20 +6,20 @@
   <title>FERROCABLES® - Recibo de Proveedores</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
   <header class="bg-white border-b shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <div class="bg-blue-600 p-2 rounded-lg text-white font-bold">⚡</div>
         <div>
-          <h1 class="font-bold text-lg text-slate-900">FERROCABLES ®</h1>
-          <p class="text-xs text-slate-500">Gestión Logística & Control de Recibo de Proveedores</p>
+          <h1 class="font-bold text-lg text-gray-900">FERROCABLES ®</h1>
+          <p class="text-xs text-gray-500">Gestión Logística & Control de Recibo de Proveedores</p>
         </div>
       </div>
       <div class="flex items-center space-x-2">
         <button onclick="abrirModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow">+ Programar Cita</button>
-        <button onclick="alert('Dashboard activo')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-3 py-2 rounded-lg text-xs">📊 Dashboard</button>
+        <button onclick="alert('Dashboard activo')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-3 py-2 rounded-lg text-xs">📊 Dashboard</button>
       </div>
     </div>
   </header>
@@ -27,11 +27,11 @@
   <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-4">
 
     <div class="bg-white border rounded-lg p-4 shadow-sm flex items-center justify-between">
-      <p class="text-xs text-slate-600">Franja de Recibo: <strong class="text-blue-700">07:00 AM – 04:00 PM</strong> | Máx. 3 Proveedores / Hora</p>
+      <p class="text-xs text-gray-600">Franja de Recibo: <strong class="text-blue-700">07:00 AM – 04:00 PM</strong> | Máx. 3 Proveedores / Hora</p>
       <div class="space-x-1">
-        <button onclick="cambiarSemana(-1)" class="border px-3 py-1 rounded text-xs bg-slate-50 hover:bg-slate-100">← Sem. Anterior</button>
+        <button onclick="cambiarSemana(-1)" class="border px-3 py-1 rounded text-xs bg-gray-50 hover:bg-gray-100">← Sem. Anterior</button>
         <button onclick="semanaActual()" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-semibold">Hoy</button>
-        <button onclick="cambiarSemana(1)" class="border px-3 py-1 rounded text-xs bg-slate-50 hover:bg-slate-100">Sem. Siguiente →</button>
+        <button onclick="cambiarSemana(1)" class="border px-3 py-1 rounded text-xs bg-gray-50 hover:bg-gray-100">Sem. Siguiente →</button>
       </div>
     </div>
 
@@ -53,29 +53,50 @@
 
   </main>
 
+  <!-- Modal con opción SIN CITA incluida -->
   <div id="modalCita" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg p-6 shadow-xl max-w-md w-full space-y-4">
-      <h3 class="font-bold text-slate-800">Programar Cita</h3>
+      <h3 class="font-bold text-gray-800">Programar Recibo de Proveedor</h3>
       <form id="formCita" class="space-y-3">
-        <input type="text" id="inputProveedor" required placeholder="Proveedor" class="w-full border p-2 text-sm rounded">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Proveedor</label>
+          <input type="text" id="inputProveedor" required placeholder="Ej: PROCABLES" class="w-full border p-2 text-sm rounded">
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
-          <input type="date" id="inputFecha" required class="border p-2 text-sm rounded">
-          <select id="inputHora" required class="border p-2 text-sm rounded">
-            <option value="07:00">07:00 AM</option>
-            <option value="08:00">08:00 AM</option>
-            <option value="09:00">09:00 AM</option>
-            <option value="10:00">10:00 AM</option>
-            <option value="11:00">11:00 AM</option>
-            <option value="12:00">12:00 PM</option>
-            <option value="13:00">01:00 PM</option>
-            <option value="14:00">02:00 PM</option>
-            <option value="15:00">03:00 PM</option>
-            <option value="16:00">04:00 PM</option>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha</label>
+            <input type="date" id="inputFecha" required class="w-full border p-2 text-sm rounded">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Hora</label>
+            <select id="inputHora" required class="w-full border p-2 text-sm rounded">
+              <option value="07:00">07:00 AM</option>
+              <option value="08:00">08:00 AM</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">01:00 PM</option>
+              <option value="14:00">02:00 PM</option>
+              <option value="15:00">03:00 PM</option>
+              <option value="16:00">04:00 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Ingreso</label>
+          <select id="inputEstado" required class="w-full border p-2 text-sm rounded bg-gray-50">
+            <option value="CON CITA">Con Cita (Programado)</option>
+            <option value="SIN CITA">Sin Cita (Llegó sin agendar)</option>
+            <option value="RECIBIDO">Recibido (Completado)</option>
           </select>
         </div>
-        <div class="flex justify-end space-x-2">
-          <button type="button" onclick="cerrarModal()" class="px-3 py-1 border text-sm rounded">Cancelar</button>
-          <button type="submit" class="px-3 py-1 bg-blue-600 text-white text-sm rounded">Guardar</button>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="cerrarModal()" class="px-3 py-1.5 border text-sm rounded">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white font-semibold text-sm rounded shadow">Guardar</button>
         </div>
       </form>
     </div>
@@ -83,8 +104,7 @@
 
   <script>
     let globalCitas = [];
-    let fechaLunesBase = new Date(2026, 9, 26); // 26 Octubre 2026
-
+    let fechaLunesBase = new Date(2026, 9, 26);
     const horasTrabajo = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
 
     function formatDate(d) {
@@ -108,9 +128,7 @@
       try {
         const res = await fetch('/api/citas');
         globalCitas = await res.json();
-      } catch (err) {
-        console.error("Error al obtener citas:", err);
-      }
+      } catch (err) {}
       renderCalendar();
     }
 
@@ -137,7 +155,7 @@
       grid.innerHTML = horasTrabajo.map(hora => {
         return `
           <div class="grid grid-cols-8 gap-1 text-xs min-h-[50px] border-b pb-1">
-            <div class="flex items-center justify-center font-bold text-slate-500 bg-slate-50 rounded">${hora}</div>
+            <div class="flex items-center justify-center font-bold text-gray-500 bg-gray-50 rounded">${hora}</div>
             ${diasSemana.map((f, idxDia) => {
               if (idxDia === 6) return `<div class="bg-rose-50 text-rose-400 p-1 rounded text-center flex items-center justify-center italic">Descanso</div>`;
               
@@ -146,19 +164,26 @@
 
               return `
                 <div class="bg-slate-50 border border-slate-200 rounded p-1 space-y-1">
-                  ${citas.map(c => `
-                    <div class="${c.estado === 'RECIBIDO' ? 'bg-emerald-100 border-emerald-300 text-emerald-900' : 'bg-amber-100 border-amber-300 text-amber-900'} border rounded p-1 shadow-sm">
-                      <div class="font-bold flex justify-between items-center">
-                        <span>${c.proveedor}</span>
-                        <button onclick="eliminarCita('${c.id}')" class="text-red-500 font-normal">✕</button>
+                  ${citas.map(c => {
+                    let colorEstilo = 'bg-amber-100 border-amber-300 text-amber-900';
+                    if (c.estado === 'RECIBIDO') colorEstilo = 'bg-emerald-100 border-emerald-300 text-emerald-900';
+                    if (c.estado === 'SIN CITA') colorEstilo = 'bg-purple-100 border-purple-300 text-purple-900';
+
+                    return `
+                      <div class="${colorEstilo} border rounded p-1 shadow-sm">
+                        <div class="font-bold flex justify-between items-center">
+                          <span>${c.proveedor}</span>
+                          <button onclick="eliminarCita('${c.id}')" class="text-red-500 font-normal">✕</button>
+                        </div>
+                        <select onchange="cambiarEstado('${c.id}', this.value)" class="text-[10px] mt-1 bg-white border rounded px-1 py-0.5">
+                          <option value="CON CITA" ${c.estado === 'CON CITA' ? 'selected' : ''}>Con Cita</option>
+                          <option value="SIN CITA" ${c.estado === 'SIN CITA' ? 'selected' : ''}>Sin Cita</option>
+                          <option value="RECIBIDO" ${c.estado === 'RECIBIDO' ? 'selected' : ''}>Recibido ✓</option>
+                        </select>
                       </div>
-                      <select onchange="cambiarEstado('${c.id}', this.value)" class="text-[10px] mt-1 bg-white border rounded px-1 py-0.5">
-                        <option value="CON CITA" ${c.estado === 'CON CITA' ? 'selected' : ''}>Con Cita</option>
-                        <option value="RECIBIDO" ${c.estado === 'RECIBIDO' ? 'selected' : ''}>Recibido ✓</option>
-                      </select>
-                    </div>
-                  `).join('')}
-                  ${libres > 0 ? `<div onclick="abrirModalConParametros('${f}', '${hora}')" class="text-[10px] text-slate-400 border border-dashed border-slate-300 rounded p-1 text-center cursor-pointer hover:bg-slate-100">+ Libre (${libres})</div>` : ''}
+                    `;
+                  }).join('')}
+                  ${libres > 0 ? `<div onclick="abrirModalConParametros('${f}', '${hora}')" class="text-[10px] text-gray-400 border border-dashed border-gray-300 rounded p-1 text-center cursor-pointer hover:bg-gray-100">+ Libre (${libres})</div>` : ''}
                 </div>
               `;
             }).join('')}
@@ -199,7 +224,8 @@
         body: JSON.stringify({
           proveedor: document.getElementById('inputProveedor').value,
           fecha: document.getElementById('inputFecha').value,
-          hora: document.getElementById('inputHora').value
+          hora: document.getElementById('inputHora').value,
+          estado: document.getElementById('inputEstado').value
         })
       });
       cerrarModal();
