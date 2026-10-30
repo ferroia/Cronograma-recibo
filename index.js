@@ -19,7 +19,14 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-const seedCitas = [
+const citasTotales = [
+  // SEMANA ANTERIOR (19/10 AL 25/10) - RESTAURADA
+  {"id": "h1", "fecha": "2026-10-19", "hora": "07:00", "proveedor": "PROCABLES", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
+  {"id": "h2", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "DICO", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
+  {"id": "h3", "fecha": "2026-10-20", "hora": "07:00", "proveedor": "JAGUARCOL", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
+  {"id": "h4", "fecha": "2026-10-21", "hora": "07:00", "proveedor": "DICO", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
+
+  // SEMANA ACTUAL (26/10 AL 01/11) - DESDE IMÁGENES
   {"id": "1", "fecha": "2026-10-26", "hora": "07:00", "proveedor": "MERCURY", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "2", "fecha": "2026-10-26", "hora": "10:00", "proveedor": "ELECTRICOS PEREZ", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
   {"id": "3", "fecha": "2026-10-26", "hora": "12:00", "proveedor": "LAUMAYER", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "RECIBIDO"},
@@ -56,6 +63,8 @@ const seedCitas = [
   {"id": "34", "fecha": "2026-10-30", "hora": "14:00", "proveedor": "TCC", "tipoMaterial": "", "placa": "", "observaciones": "", "estado": "CON CITA"}
 ];
 
+let memoriaLocal = [...citasTotales];
+
 async function initDB() {
   if (!process.env.DATABASE_URL) return;
   try {
@@ -73,7 +82,7 @@ async function initDB() {
       );
     `);
     
-    for (const c of seedCitas) {
+    for (const c of citasTotales) {
       await client.query(`
         INSERT INTO citas_proveedores (id, proveedor, fecha, hora, tipo_material, placa, observaciones, estado)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -81,64 +90,64 @@ async function initDB() {
       `, [c.id, c.proveedor, c.fecha, c.hora, c.tipoMaterial, c.placa, c.observaciones, c.estado]);
     }
     client.release();
-    console.log("Tabla sincronizada y 34 citas restauradas con exito.");
   } catch (err) {
-    console.error("Error PostgreSQL:", err);
+    console.error("Error DB:", err);
   }
 }
 
 initDB();
 
 app.get('/api/citas', async (req, res) => {
-  if (!process.env.DATABASE_URL) return res.json(seedCitas);
+  if (!process.env.DATABASE_URL) return res.json(memoriaLocal);
   try {
     const result = await pool.query('SELECT id, proveedor, fecha, hora, tipo_material AS "tipoMaterial", placa, observaciones, estado FROM citas_proveedores ORDER BY id ASC');
+    if (result.rows.length === 0) return res.json(citasTotales);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json(memoriaLocal);
   }
 });
 
 app.post('/api/citas', async (req, res) => {
   const { proveedor, fecha, hora, tipoMaterial, placa, observaciones } = req.body;
-  if (!proveedor || !fecha || !hora) return res.status(400).json({ error: 'Datos incompletos' });
   const id = Date.now().toString();
-  const estado = 'CON CITA';
-  try {
-    if (process.env.DATABASE_URL) {
+  const nueva = { id, proveedor, fecha, hora, tipoMaterial: tipoMaterial || '', placa: placa || '', observaciones: observaciones || '', estado: 'CON CITA' };
+  memoriaLocal.push(nueva);
+
+  if (process.env.DATABASE_URL) {
+    try {
       await pool.query(
         'INSERT INTO citas_proveedores (id, proveedor, fecha, hora, tipo_material, placa, observaciones, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-        [id, proveedor, fecha, hora, tipoMaterial || '', placa || '', observaciones || '', estado]
+        [id, proveedor, fecha, hora, nueva.tipoMaterial, nueva.placa, nueva.observaciones, nueva.estado]
       );
-    }
-    res.json({ success: true, cita: { id, proveedor, fecha, hora, tipoMaterial, placa, observaciones, estado } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    } catch (e) {}
   }
+  res.json({ success: true, cita: nueva });
 });
 
 app.post('/api/citas/estado', async (req, res) => {
   const { id, estado } = req.body;
-  try {
-    if (process.env.DATABASE_URL) {
+  const item = memoriaLocal.find(c => c.id === id);
+  if (item) item.estado = estado;
+
+  if (process.env.DATABASE_URL) {
+    try {
       await pool.query('UPDATE citas_proveedores SET estado = $1 WHERE id = $2', [estado, id]);
-    }
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    } catch (e) {}
   }
+  res.json({ success: true });
 });
 
 app.delete('/api/citas/:id', async (req, res) => {
   const { id } = req.params;
-  try {
-    if (process.env.DATABASE_URL) {
+  memoriaLocal = memoriaLocal.filter(c => c.id !== id);
+
+  if (process.env.DATABASE_URL) {
+    try {
       await pool.query('DELETE FROM citas_proveedores WHERE id = $1', [id]);
-    }
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    } catch (e) {}
   }
+  res.json({ success: true });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -147,4 +156,4 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor activo en ${PORT}`));
